@@ -55,7 +55,7 @@ def parse_url(url_string:str, tlds: list[str] = []) -> dict[str, str] | None:
     temp = url_string.split('.')
     match len(temp):
         case 2:
-            #example.org
+            #example.org/directory
             tld_and_dir = temp[1].split('/')
             url_dict['top_level_domain'] = tld_and_dir[0] if tld_and_dir[0] in tlds else ''
             if not url_dict['top_level_domain']:
@@ -89,7 +89,7 @@ def parse_url(url_string:str, tlds: list[str] = []) -> dict[str, str] | None:
         case 4:
             tld_and_dir = ".".join(temp[2:]).split('/')
             if all(tld in tlds for tld in tld_and_dir[0].split('.')):
-                #www.example.org/directory.xhtml and example.gov.bs/directory
+                #www.example.org/directory.xhtml and example.gov.bs/directory.xhtml
                 url_dict['subdomain'] = temp[0]
                 url_dict['second_level_domain'] = temp[1]
                 url_dict['top_level_domain'] = tld_and_dir[0]
