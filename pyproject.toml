@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyrolysate"
+version = "0.3.1"
+authors = [
+	{ name ="Andrew Hennis", email="andrew.mr.hennis@gmail.com" },
+]
+description = "Parser made to converted lists of emails and urls into JSON and CSV formatted files"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+	"Programming Language :: Python :: 3",
+	"License :: OSI Approved :: MIT License",
+	"Operating System :: OS Independent",
+]
+dependencies = [
+    "requests"
+]
+
+[project.urls]
+Homepage = "https://github.com/dawnandrew100/pyrolysate"
+Issues = "https://github.com/dawnandrew100/pyrolysate/issues"
