@@ -1,9 +1,11 @@
+import io
 import csv
 import json
 import requests
 
 def main():
     print(email.parse_email('example@gmail.com'))
+    print(email.parse_email('example@gmail.gov.bs'))
     print(email.to_json('example@gmail.com'))
     print(email.to_json(['example@gmail.com']))
     print(email.to_json(['example@gmail.com', 'black.panther@hotmail.com']))
@@ -25,7 +27,7 @@ class Email:
     def __init__(self):
         self.shared = Shared()
 
-    def parse_email(self, e_mail_string: str) -> dict[str, str] | None:
+    def parse_email(self, e_mail_string: str) -> dict[str, dict[str, str]] | None:
         """ Parses email addresses into component parts
         :param e_mail_string: A string containing an email address
         :type e_mail_string: str
@@ -35,12 +37,13 @@ class Email:
         email_dict = {e_mail_string: {"username": "", "mail_server": "", "domain": "", }}
         temp = e_mail_string.split('@')
         if len(temp) != 2: 
-            return #returns none for invalid emails without @
+            return None #returns none for invalid emails without @
         email_dict[e_mail_string]["username"] = temp[0]
         server_and_domain = temp[1].split('.')
         if len(server_and_domain) > 3:
-            return #handles emails ending in standard tld or government emails (.gov.bs)
+            return None #invalid email with too many periods
         email_dict[e_mail_string]["mail_server"] = server_and_domain[0]
+        #handles emails ending in standard tld or government emails (.gov.bs)
         email_dict[e_mail_string]["domain"] = ".".join(server_and_domain[1:])
         return email_dict
 
@@ -52,13 +55,13 @@ class Email:
         :rtype: list[dict[str, dict[str, str]]] | None
         """
         if not isinstance(emails, list) or len(emails) < 1:
-            return
+            return None
         email_array = []
         for email in emails:
             email_array.append(self.parse_email(email))
         return email_array
     
-    def to_json(self, emails: list[str] | str) -> list[dict[str, str]] | dict[str, str] | None:
+    def to_json(self, emails: list[str] | str) -> list[dict[str, str]] | str | None:
         """Creates JSON string of emails
         :param emails: list of emails or singular email string
         :type emails: list[str] | str
@@ -68,10 +71,14 @@ class Email:
         if isinstance(emails, str) or (isinstance(emails, list) and len(emails) == 1):
             email = [emails] if isinstance(emails, str) else emails
             result = self.parse_email(email[0])
-            return self.shared.to_json(result)
+            if result is None:
+                return None
+            return self.shared._to_json(result)
         if len(emails) >= 2:
             result = self.email_array(emails)
-            return self.shared.to_json(result)
+            if result is None:
+                return None
+            return self.shared._to_json(result)
         return
 
 class Url:
@@ -95,18 +102,18 @@ class Url:
             _, tlds = self.get_tld()
         scheme = url_string.split('://')[0]
         if not any(tld in url_string for tld in tlds) or (len([scheme]) >= 2 and scheme not in schemes):
-            return
+            return None
         if scheme in schemes:
             url_dict['scheme'], url_string = url_string.split('://')
 
         temp = url_string.split('.')
         match len(temp):
             case 2:
-                #example.org/directory
+                #example.org or example.org/directory
                 tld_and_dir = temp[1].split('/')
                 url_dict['top_level_domain'] = tld_and_dir[0] if tld_and_dir[0] in tlds else ''
                 if not url_dict['top_level_domain']:
-                    return
+                    return None
                 url_dict['second_level_domain'] = temp[0]
                 url_dict['directories'] = "/".join(tld_and_dir[1:])
                 return url_dict
@@ -114,12 +121,12 @@ class Url:
                 tld_and_dir = temp[2].split('/')
                 if tld_and_dir[0] in tlds:
                     if temp[1] in tlds:
-                        #example.gov.bs/directory
+                        #example.gov.bs or example.gov.bs/directory
                         url_dict['second_level_domain'] = temp[0]
                         url_dict['top_level_domain'] = ".".join([temp[1], tld_and_dir[0]])
                         url_dict['directories'] = "/".join(tld_and_dir[1:])
                         return url_dict
-                    #www.example.com/directory
+                    #www.example.com or www.example.com/directory
                     url_dict['subdomain'] = temp[0]
                     url_dict['second_level_domain'] = temp[1]
                     url_dict['top_level_domain'] = tld_and_dir[0]
@@ -130,13 +137,13 @@ class Url:
                 temp = ".".join(temp[1:]).split('/')
                 url_dict['top_level_domain'] = temp[0] if temp[0] in tlds else ''
                 if not url_dict['top_level_domain']:
-                    return
+                    return None
                 url_dict['directories'] = "/".join(temp[1:])
                 return url_dict
             case 4:
                 tld_and_dir = ".".join(temp[2:]).split('/')
                 if all(tld in tlds for tld in tld_and_dir[0].split('.')):
-                    #www.example.org/directory.xhtml and example.gov.bs/directory.xhtml
+                    #www.example.org/directory.xhtml or example.gov.bs/directory.xhtml
                     url_dict['subdomain'] = temp[0]
                     url_dict['second_level_domain'] = temp[1]
                     url_dict['top_level_domain'] = tld_and_dir[0]
@@ -151,7 +158,7 @@ class Url:
                     url_dict['top_level_domain'] = ".".join([temp[2], tld_and_dir[0]])
                     url_dict['directories'] = ".".join(tld_and_dir[1:])
                     return url_dict
-        return
+        return None
 
     def url_array(self, urls: list[str], tlds: list[str] = []) -> list[str]:
         """Parses each url in an array
@@ -168,7 +175,7 @@ class Url:
         return url_list
 
 
-    def to_json(self, urls: list[str] | str) -> list[dict[str, str]] | dict[str, str] | None:
+    def to_json(self, urls: list[str] | str) -> list[dict[str, str]] | str | None:
         """Creates JSON string of urls
         :param urls: list of urls or singular url string
         :type urls: list[str] | str
@@ -178,11 +185,15 @@ class Url:
         if isinstance(urls, str) or (isinstance(urls, list) and len(urls) == 1):
             url = [urls] if isinstance(urls, str) else urls
             result = self.parse_url(url[0])
-            return self.shared.to_json(result)
+            if result is None:
+                return None
+            return self.shared._to_json(result)
         if len(urls) >= 2:
             result = self.url_array(urls)
-            return self.shared.to_json(result)
-        return
+            if result is None:
+                return None
+            return self.shared._to_json(result)
+        return None
 
 
     def get_tld(self) -> tuple[str, list[str]]:
@@ -197,10 +208,10 @@ class Url:
         return last_updated, tlds
 
 class Shared:
-    def to_json(self, inputs: list[dict[str, str]] | dict[str, str]) -> list[dict[str, str]] | dict[str, str]:
+    def _to_json(self, inputs: list[dict[str, dict[str, str]]] | dict[str, dict[str, str]] | dict[str, str] | list[str]) -> str:
         return json.dumps(inputs) #will write directly to json file eventually
 
-    def to_csv(self):
+    def _to_csv(self):
         pass
 
 email = Email()
