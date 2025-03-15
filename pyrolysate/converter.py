@@ -47,7 +47,7 @@ class Email:
         email_dict[e_mail_string]["domain"] = ".".join(server_and_domain[1:])
         return email_dict
 
-    def email_array(self, emails: list[str]) -> list[dict[str, dict[str, str]]] | None:
+    def parse_email_array(self, emails: list[str]) -> list[dict[str, dict[str, str]]] | None:
         """Parses each email in an array
         :param emails: list of emails
         :type emails: list[str]
@@ -75,7 +75,7 @@ class Email:
                 return None
             return self.shared._to_json(result)
         if len(emails) >= 2:
-            result = self.email_array(emails)
+            result = self.parse_email_array(emails)
             if result is None:
                 return None
             return self.shared._to_json(result)
@@ -102,6 +102,8 @@ class Url:
             _, tlds = self.get_tld()
         scheme = url_string.split('://')[0]
         if not any(tld in url_string for tld in tlds) or (len([scheme]) >= 2 and scheme not in schemes):
+            return None
+        if '://' in url_string and scheme not in schemes:
             return None
         if scheme in schemes:
             url_dict['scheme'], url_string = url_string.split('://')

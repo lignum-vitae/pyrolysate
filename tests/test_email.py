@@ -1,0 +1,104 @@
+import unittest
+from pyrolysate import email
+
+class TestEmail(unittest.TestCase):
+    def test_parse_email_valid(self):
+        """Test parsing of valid email addresses"""
+        result = email.parse_email('example@gmail.com')
+        self.assertEqual(result, {
+            'example@gmail.com': {
+                'username': 'example',
+                'mail_server': 'gmail',
+                'domain': 'com'
+            }
+        })
+
+    def test_parse_email_government(self):
+        """Test parsing of government email addresses"""
+        result = email.parse_email('user@agency.gov.bs')
+        self.assertEqual(result, {
+            'user@agency.gov.bs': {
+                'username': 'user',
+                'mail_server': 'agency',
+                'domain': 'gov.bs'
+            }
+        })
+
+    def test_parse_email_invalid_no_at(self):
+        """Test parsing of invalid email without @ symbol"""
+        result = email.parse_email('invalid.email.com')
+        self.assertIsNone(result)
+
+    def test_parse_email_invalid_too_many_dots(self):
+        """Test parsing of invalid email with too many dots"""
+        result = email.parse_email('user@too.many.dots.com')
+        self.assertIsNone(result)
+
+    def test_email_array_valid(self):
+        """Test parsing array of valid emails"""
+        emails = ['test1@example.com', 'test2@domain.org']
+        result = email.parse_email_array(emails)
+        self.assertEqual(result, [
+            {
+                'test1@example.com': {
+                    'username': 'test1',
+                    'mail_server': 'example',
+                    'domain': 'com'
+                }
+            },
+            {
+                'test2@domain.org': {
+                    'username': 'test2',
+                    'mail_server': 'domain',
+                    'domain': 'org'
+                }
+            }
+        ])
+
+    def test_email_array_empty(self):
+        """Test parsing empty email array"""
+        result = email.parse_email_array([])
+        self.assertIsNone(result)
+
+    def test_email_empty(self):
+        """Test parsing empty email array"""
+        result = email.parse_email("")
+        self.assertIsNone(result)
+
+    def test_email_array_invalid_input(self):
+        """Test parsing with invalid input type"""
+        result = email.parse_email_array("not a list")
+        self.assertIsNone(result)
+
+    def test_to_json_single_email(self):
+        """Test JSON conversion of single email"""
+        result = email.to_json('test@example.com')
+        self.assertIsInstance(result, str)
+        self.assertIn('test@example.com', result)
+        self.assertIn('username', result)
+        self.assertIn('mail_server', result)
+        self.assertIn('domain', result)
+
+    def test_to_json_multiple_emails(self):
+        """Test JSON conversion of multiple emails"""
+        emails = ['test1@example.com', 'test2@domain.org']
+        result = email.to_json(emails)
+        self.assertIsInstance(result, str)
+        self.assertIn('test1@example.com', result)
+        self.assertIn('test2@domain.org', result)
+
+    def test_to_json_invalid_email(self):
+        """Test JSON conversion of invalid email"""
+        result = email.to_json('invalid.email')
+        self.assertIsNone(result)
+
+    def test_to_json_empty(self):
+        """Test JSON conversion of empty list"""
+        result = email.to_json([])
+        self.assertIsNone(result)
+
+        result = email.to_json('')
+        self.assertIsNone(result)
+
+if __name__ == '__main__':
+    unittest.main()
