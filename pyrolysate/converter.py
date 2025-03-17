@@ -94,6 +94,8 @@ class Url:
         :return: dictionary containing url parsed into sub-parts
         :rtype: dict[str, str] | None
         """
+        if not isinstance(url_string, str) or not url_string:
+            return None
         url_string = url_string.lower()
         url_dict = {'scheme': '', 'subdomain': '', 'second_level_domain': '', 
                     'top_level_domain': '', 'directories': ''}
@@ -162,13 +164,15 @@ class Url:
                     return url_dict
         return None
 
-    def url_array(self, urls: list[str], tlds: list[str] = []) -> list[str]:
+    def url_array(self, urls: list[str], tlds: list[str] = []) -> list[str] | None:
         """Parses each url in an array
         :param urls: list of urls
         :type urls: list[str]
         :return: parsed list of urls in a dictionary
         :rtype: list[dict[str, dict[str, str]]] | None
         """
+        if not urls or all(item == "" for item in urls) or not isinstance(urls, list):
+            return None
         url_list = []
         if not tlds:
             _, tlds = self.get_tld()

@@ -73,6 +73,20 @@ class TestUrl(unittest.TestCase):
         result = url.parse_url('ftp://example.com')
         self.assertIsNone(result)
 
+    def test_parse_empty_url_string(self):
+        """Test parsing URL with invalid scheme"""
+        urls = [[''], [], '']
+        for x in urls:
+            result = url.parse_url(x)
+            self.assertIsNone(result)
+
+    def test_parse_empty_url_array(self):
+        """Test parsing URL with invalid scheme"""
+        urls = [[''], [], '']
+        for x in urls:
+            result = url.url_array(x)
+            self.assertIsNone(result)
+
     def test_parse_url_invalid_tld(self):
         """Test parsing URL with invalid top-level domain"""
         result = url.parse_url('example.invalidtld')
@@ -142,6 +156,7 @@ class TestUrl(unittest.TestCase):
         self.assertIn('com', tlds)
         self.assertIn('org', tlds)
         self.assertIn('net', tlds)
+        self.assertIn('io', tlds)
 
 if __name__ == '__main__':
     unittest.main()
