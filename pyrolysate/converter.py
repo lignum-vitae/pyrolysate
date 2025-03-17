@@ -68,18 +68,7 @@ class Email:
         :return: list of dictionaries (or single dictionary) of emails in JSON format
         :rtype: list[dict[str, str]] | dict[str, str] | None
         """
-        if isinstance(emails, str) or (isinstance(emails, list) and len(emails) == 1):
-            email = [emails] if isinstance(emails, str) else emails
-            result = self.parse_email(email[0])
-            if result is None:
-                return None
-            return self.shared._to_json(result)
-        if len(emails) >= 2:
-            result = self.parse_email_array(emails)
-            if result is None:
-                return None
-            return self.shared._to_json(result)
-        return
+        return self.shared._to_json(self.parse_email, self.parse_email_array, emails)
 
 class Url:
     def __init__(self):
@@ -164,7 +153,7 @@ class Url:
                     return url_dict
         return None
 
-    def url_array(self, urls: list[str], tlds: list[str] = []) -> list[str] | None:
+    def parse_url_array(self, urls: list[str], tlds: list[str] = []) -> list[str] | None:
         """Parses each url in an array
         :param urls: list of urls
         :type urls: list[str]
@@ -188,19 +177,7 @@ class Url:
         :return: list of dictionaries (or single dictionary) of urls in JSON format
         :rtype: list[dict[str, str]] | dict[str, str] | None
         """
-        if isinstance(urls, str) or (isinstance(urls, list) and len(urls) == 1):
-            url = [urls] if isinstance(urls, str) else urls
-            result = self.parse_url(url[0])
-            if result is None:
-                return None
-            return self.shared._to_json(result)
-        if len(urls) >= 2:
-            result = self.url_array(urls)
-            if result is None:
-                return None
-            return self.shared._to_json(result)
-        return None
-
+        return self.shared._to_json(self.parse_url, self.parse_url_array, urls)
 
     def get_tld(self) -> tuple[str, list[str]]:
         """ Grabs top level domains from internet assigned numbers authority
@@ -214,11 +191,28 @@ class Url:
         return last_updated, tlds
 
 class Shared:
-    def _to_json(self, inputs: list[dict[str, dict[str, str]]] | dict[str, dict[str, str]] | dict[str, str] | list[str]) -> str:
-        return json.dumps(inputs) #will write directly to json file eventually
+    def _to_json(self, string_parse, array_parse, inputs) -> str | None:
+        if isinstance(inputs, str) or (isinstance(inputs, list) and len(inputs) == 1):
+            inputs = [inputs] if isinstance(inputs, str) else inputs
+            result = string_parse(inputs[0])
+            if result is None:
+                return None
+            return json.dumps(result)
+        if len(inputs) >= 2:
+            result = array_parse(inputs)
+            if result is None:
+                return None
+            return json.dumps(result)
+        return None
+
+    def _to_json_file(self):
+        raise NotImplementedError()
 
     def _to_csv(self):
-        pass
+        raise NotImplementedError()
+
+    def _to_csv_file(self):
+        raise NotImplementedError()
 
 email = Email()
 url = Url()

@@ -70,8 +70,10 @@ class TestUrl(unittest.TestCase):
 
     def test_parse_url_invalid_scheme(self):
         """Test parsing URL with invalid scheme"""
-        result = url.parse_url('ftp://example.com')
-        self.assertIsNone(result)
+        schemes = ['ftp', 'htp', 'nes', 'message']
+        for scheme in schemes:
+            result = url.parse_url(f'{scheme}://example.com')
+            self.assertIsNone(result)
 
     def test_parse_empty_url_string(self):
         """Test parsing URL with invalid scheme"""
@@ -84,7 +86,7 @@ class TestUrl(unittest.TestCase):
         """Test parsing URL with invalid scheme"""
         urls = [[''], [], '']
         for x in urls:
-            result = url.url_array(x)
+            result = url.parse_url_array(x)
             self.assertIsNone(result)
 
     def test_parse_url_invalid_tld(self):
@@ -95,7 +97,7 @@ class TestUrl(unittest.TestCase):
     def test_url_array_valid(self):
         """Test parsing array of valid URLs"""
         urls = ['example.com', 'www.test.org']
-        result = url.url_array(urls)
+        result = url.parse_url_array(urls)
         expected = [
             {
                 'scheme': '',
