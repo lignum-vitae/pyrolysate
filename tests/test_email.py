@@ -38,22 +38,19 @@ class TestEmail(unittest.TestCase):
         """Test parsing array of valid emails"""
         emails = ['test1@example.com', 'test2@domain.org']
         result = email.parse_email_array(emails)
-        self.assertEqual(result, [
+        self.assertEqual(result,
             {
                 'test1@example.com': {
                     'username': 'test1',
                     'mail_server': 'example',
                     'domain': 'com'
-                }
-            },
-            {
+                },
                 'test2@domain.org': {
                     'username': 'test2',
                     'mail_server': 'domain',
                     'domain': 'org'
                 }
-            }
-        ])
+            })
 
     def test_email_array_empty(self):
         """Test parsing empty email array"""
@@ -98,6 +95,36 @@ class TestEmail(unittest.TestCase):
         self.assertIsNone(result)
 
         result = email.to_json('')
+        self.assertIsNone(result)
+
+    def test_to_csv_single_email(self):
+        """Test CSV conversion of single email"""
+        result = email.to_csv('test@example.com')
+        self.assertIsInstance(result, str)
+        self.assertIn('test@example.com', result)
+        self.assertIn('username', result)
+        self.assertIn('mail_server', result)
+        self.assertIn('domain', result)
+
+    def test_to_csv_multiple_emails(self):
+        """Test CSV conversion of multiple emails"""
+        emails = ['test1@example.com', 'test2@domain.org']
+        result = email.to_csv(emails)
+        self.assertIsInstance(result, str)
+        self.assertIn('test1@example.com', result)
+        self.assertIn('test2@domain.org', result)
+
+    def test_to_csv_invalid_email(self):
+        """Test CSV conversion of invalid email"""
+        result = email.to_csv('invalid.email')
+        self.assertIsNone(result)
+
+    def test_to_csv_empty(self):
+        """Test CSV conversion of empty list"""
+        result = email.to_csv([])
+        self.assertIsNone(result)
+
+        result = email.to_csv('')
         self.assertIsNone(result)
 
 if __name__ == '__main__':

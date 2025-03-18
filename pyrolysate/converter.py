@@ -4,11 +4,17 @@ import json
 import requests
 
 def main():
-    print(email.parse_email('example@gmail.com'))
-    print(email.parse_email_array(['example@gmail.com',
+    print(email.to_json('example@gmail.com'))
+    print(email.to_json(['example@gmail.com',
                                    'example@treasury.gov.bs']))
-    print(url.parse_url('https://www.ryugod.com/pages/ide/python'))
-    print(url.parse_url_array(['https://www.ryugod.com/pages/ide/python',
+    print(email.to_csv('example@gmail.com'))
+    print(email.to_csv(['example@gmail.com',
+                                   'example@treasury.gov.bs']))
+    print(url.to_json('https://www.ryugod.com/pages/ide/python'))
+    print(url.to_json(['https://www.ryugod.com/pages/ide/python',
+                               'https://www.youtube.com/watch?v=W1htfqXyX6M&ab_channel=PhilipDeFranco']))
+    print(url.to_csv('https://www.ryugod.com/pages/ide/python'))
+    print(url.to_csv(['https://www.ryugod.com/pages/ide/python',
                                'https://www.youtube.com/watch?v=W1htfqXyX6M&ab_channel=PhilipDeFranco']))
 
 class Email:
@@ -58,6 +64,16 @@ class Email:
         :rtype: list[dict[str, str]] | dict[str, str] | None
         """
         return self.shared._to_json(self.parse_email, self.parse_email_array, emails)
+
+    def to_csv(self, emails: list[str] | str) -> str | None:
+        header = ['email', 'username', 'mail_server', 'domain']
+        field_generator = lambda entry, details: [
+                entry, 
+                details['username'], 
+                details['mail_server'], 
+                details['domain'] 
+                ]
+        return self.shared._to_csv(header, field_generator, self.parse_email, self.parse_email_array, emails)
 
 class Url:
     def __init__(self):
@@ -170,6 +186,18 @@ class Url:
         """
         return self.shared._to_json(self.parse_url, self.parse_url_array, urls)
 
+    def to_csv(self, urls: list[str] | str) -> str | None:
+        header = ["url", "scheme", "subdomain", "second_level_domain", "top_level_domain", "directories"]
+        field_generator = lambda entry, details: [
+                entry, 
+                details['scheme'], 
+                details['subdomain'], 
+                details['second_level_domain'], 
+                details['top_level_domain'], 
+                details['directories']
+                ]
+        return self.shared._to_csv(header, field_generator, self.parse_url, self.parse_url_array, urls)
+
     def get_tld(self) -> tuple[str, list[str]]:
         """ Grabs top level domains from internet assigned numbers authority
         :return: List of up-to-date top level domains and date list was last updated
@@ -183,24 +211,37 @@ class Url:
 
 class Shared:
     def _to_json(self, string_parse, array_parse, data) -> str | None:
+        result = None
         if isinstance(data, str) or (isinstance(data, list) and len(data) == 1):
             data = [data] if isinstance(data, str) else data
             result = string_parse(data[0])
-            if result is None:
-                return None
-            return json.dumps(result)
         if len(data) >= 2:
             result = array_parse(data)
-            if result is None:
-                return None
-            return json.dumps(result)
-        return None
+        if result is None:
+            return None
+        return json.dumps(result)
 
     def _to_json_file(self):
         raise NotImplementedError()
 
-    def _to_csv(self, header, data_type, data) -> str:
-        raise NotImplementedError()
+    def _to_csv(self, headers, data_fields, string_parse, array_parse, data) -> str | None:
+        result = None
+        if isinstance(data, str) or (isinstance(data, list) and len(data) == 1):
+            data = [data] if isinstance(data, str) else data
+            result = string_parse(data[0])
+        if len(data) >= 2:
+            result = array_parse(data)
+        if result is None:
+            return None
+
+        buffer = StringIO() #Open StringIO object
+        csv_writer = csv.writer(buffer)
+        csv_writer.writerow(headers)
+        for entry, details in result.items():
+            csv_writer.writerow(data_fields(entry, details))
+        csv_data = buffer.getvalue()
+        buffer.close() #Close the StringIO object
+        return csv_data
 
     def _to_csv_file(self):
         raise NotImplementedError()
