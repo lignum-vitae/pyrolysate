@@ -7,14 +7,22 @@ def main():
     print(email.to_json('example@gmail.com'))
     print(email.to_json(['example@gmail.com',
                                    'example@treasury.gov.bs']))
+    print(email.to_json_file('test_email', ['example@gmail.com',
+                                   'example@treasury.gov.bs']))
     print(email.to_csv('example@gmail.com'))
     print(email.to_csv(['example@gmail.com',
+                                   'example@treasury.gov.bs']))
+    print(email.to_csv_file('test_email', ['example@gmail.com',
                                    'example@treasury.gov.bs']))
     print(url.to_json('https://www.ryugod.com/pages/ide/python'))
     print(url.to_json(['https://www.ryugod.com/pages/ide/python',
                                'https://www.youtube.com/watch?v=W1htfqXyX6M&ab_channel=PhilipDeFranco']))
+    print(url.to_json_file('test', ['https://www.ryugod.com/pages/ide/python',
+                               'www.example.com']))
     print(url.to_csv('https://www.ryugod.com/pages/ide/python'))
     print(url.to_csv(['https://www.ryugod.com/pages/ide/python',
+                               'https://www.youtube.com/watch?v=W1htfqXyX6M&ab_channel=PhilipDeFranco']))
+    print(url.to_csv_file('test', ['https://www.ryugod.com/pages/ide/python',
                                'https://www.youtube.com/watch?v=W1htfqXyX6M&ab_channel=PhilipDeFranco']))
 
 class Email:
@@ -56,14 +64,20 @@ class Email:
                 email_dict.update(self.parse_email(email))
         return email_dict
     
-    def to_json(self, emails: list[str] | str) -> list[dict[str, str]] | str | None:
+    def to_json(self, emails: list[str] | str, prettify=True) -> list[dict[str, str]] | str | None:
         """Creates JSON string of emails
         :param emails: list of emails or singular email string
         :type emails: list[str] | str
         :return: list of dictionaries (or single dictionary) of emails in JSON format
         :rtype: list[dict[str, str]] | dict[str, str] | None
         """
-        return self.shared._to_json(self.parse_email, self.parse_email_array, emails)
+        return self.shared._to_json(self.parse_email, self.parse_email_array, emails, prettify)
+
+    def to_json_file(self, file_name: str, emails: list[str], prettify: bool=True) -> str:
+        success = self.shared._to_json_file(self.parse_email, self.parse_email_array, file_name, emails, prettify)
+        if not success:
+            return "Failed to write file"
+        return "File successfully written"
 
     def to_csv(self, emails: list[str] | str) -> str | None:
         header = ['email', 'username', 'mail_server', 'domain']
@@ -74,6 +88,19 @@ class Email:
                 details['domain'] 
                 ]
         return self.shared._to_csv(header, field_generator, self.parse_email, self.parse_email_array, emails)
+
+    def to_csv_file(self, file_name, urls: list[str] | str) -> str:
+        header = ['email', 'username', 'mail_server', 'domain']
+        field_generator = lambda entry, details: [
+                entry, 
+                details['username'], 
+                details['mail_server'], 
+                details['domain'] 
+                ]
+        success = self.shared._to_csv_file(header, field_generator, self.parse_email, self.parse_email_array, file_name, urls)
+        if not success:
+            return "Failed to write file"
+        return "File successfully written"
 
 class Url:
     def __init__(self):
@@ -177,14 +204,20 @@ class Url:
                 url_dict.update(self.parse_url(url, tlds))
         return url_dict
 
-    def to_json(self, urls: list[str] | str) -> list[dict[str, str]] | str | None:
+    def to_json(self, urls: list[str] | str, prettify=True) -> list[dict[str, str]] | str | None:
         """Creates JSON string of urls
         :param urls: list of urls or singular url string
         :type urls: list[str] | str
         :return: list of dictionaries (or single dictionary) of urls in JSON format
         :rtype: list[dict[str, str]] | dict[str, str] | None
         """
-        return self.shared._to_json(self.parse_url, self.parse_url_array, urls)
+        return self.shared._to_json(self.parse_url, self.parse_url_array, urls, prettify)
+
+    def to_json_file(self, file_name: str, urls: list[str], prettify: bool=True) -> str:
+        success = self.shared._to_json_file(self.parse_url, self.parse_url_array, file_name, urls, prettify)
+        if not success:
+            return "Failed to write file"
+        return "File successfully written"
 
     def to_csv(self, urls: list[str] | str) -> str | None:
         header = ["url", "scheme", "subdomain", "second_level_domain", "top_level_domain", "directories"]
@@ -198,6 +231,21 @@ class Url:
                 ]
         return self.shared._to_csv(header, field_generator, self.parse_url, self.parse_url_array, urls)
 
+    def to_csv_file(self, file_name, urls: list[str] | str) -> str:
+        header = ["url", "scheme", "subdomain", "second_level_domain", "top_level_domain", "directories"]
+        field_generator = lambda entry, details: [
+                entry, 
+                details['scheme'], 
+                details['subdomain'], 
+                details['second_level_domain'], 
+                details['top_level_domain'], 
+                details['directories']
+                ]
+        success = self.shared._to_csv_file(header, field_generator, self.parse_url, self.parse_url_array, file_name, urls)
+        if not success:
+            return "Failed to write file"
+        return "File successfully written"
+
     def get_tld(self) -> tuple[str, list[str]]:
         """ Grabs top level domains from internet assigned numbers authority
         :return: List of up-to-date top level domains and date list was last updated
@@ -210,30 +258,43 @@ class Url:
         return last_updated, tlds
 
 class Shared:
-    def _to_json(self, string_parse, array_parse, data) -> str | None:
-        result = None
+    def _validate_data(self, string_parse, array_parse, data) -> dict[str, dict[str, str]] | None:
+        results = None
+        if not isinstance(data, str) and not isinstance(data, list):
+            return None
         if isinstance(data, str) or (isinstance(data, list) and len(data) == 1):
             data = [data] if isinstance(data, str) else data
-            result = string_parse(data[0])
+            results = string_parse(data[0])
         if len(data) >= 2:
-            result = array_parse(data)
+            results = array_parse(data)
+        if results is not None:
+            return results
+        return None
+
+    def _to_json(self, string_parse, array_parse, data, pretty) -> str | None:
+        result = self._validate_data(string_parse, array_parse, data)
         if result is None:
             return None
-        return json.dumps(result)
+        if not pretty:
+            return json.dumps(result)
+        return json.dumps(result, indent=4)
 
-    def _to_json_file(self):
-        raise NotImplementedError()
+    def _to_json_file(self, string_parse, array_parse, file_name, data, pretty) -> bool:
+        result = self._validate_data(string_parse, array_parse, data)
+        if result is None:
+            return False
+        if not pretty:
+            with open(f"{file_name}.json", 'w') as file:
+                json.dump(result, file)
+        if pretty:    
+            with open(f"{file_name}.json", 'w') as file:
+                json.dump(result, file, indent=4)
+        return True
 
     def _to_csv(self, headers, data_fields, string_parse, array_parse, data) -> str | None:
-        result = None
-        if isinstance(data, str) or (isinstance(data, list) and len(data) == 1):
-            data = [data] if isinstance(data, str) else data
-            result = string_parse(data[0])
-        if len(data) >= 2:
-            result = array_parse(data)
+        result = self._validate_data(string_parse, array_parse, data)
         if result is None:
             return None
-
         buffer = StringIO() #Open StringIO object
         csv_writer = csv.writer(buffer)
         csv_writer.writerow(headers)
@@ -243,8 +304,16 @@ class Shared:
         buffer.close() #Close the StringIO object
         return csv_data
 
-    def _to_csv_file(self):
-        raise NotImplementedError()
+    def _to_csv_file(self, headers, data_fields, string_parse, array_parse, file_name, data) -> bool:
+        result = self._validate_data(string_parse, array_parse, data)
+        if result is None:
+            return False
+        with open(f"{file_name}.csv", 'w') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(headers)
+            for entry, details in result.items():
+                csv_writer.writerow(data_fields(entry, details))
+        return True
 
 email = Email()
 url = Url()
