@@ -162,8 +162,7 @@ class Url:
             return url_dict
 
         temp = temp_url_string.split('.')
-        temp_len = len(temp)
-        match temp_len:
+        match len(temp):
             case 2:
                 #example.org or example.org/directory
                 tld_and_dir = temp[1].split('/')
