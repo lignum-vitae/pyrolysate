@@ -4,26 +4,20 @@ import json
 import requests
 
 def main():
-    print(email.to_json('example@gmail.com'))
-    print(email.to_json(['example@gmail.com',
-                                   'example@treasury.gov.bs']))
-    print(email.to_json_file('test_email', ['example@gmail.com',
-                                   'example@treasury.gov.bs']))
-    print(email.to_csv('example@gmail.com'))
-    print(email.to_csv(['example@gmail.com',
-                                   'example@treasury.gov.bs']))
-    print(email.to_csv_file('test_email', ['example@gmail.com',
-                                   'example@treasury.gov.bs']))
-    print(url.to_json('https://www.ryugod.com/pages/ide/python'))
-    print(url.to_json(['https://www.ryugod.com/pages/ide/python',
-                               'https://www.youtube.com/watch?v=W1htfqXyX6M&ab_channel=PhilipDeFranco']))
-    print(url.to_json_file('test', ['https://www.ryugod.com/pages/ide/python',
-                               'www.example.com']))
-    print(url.to_csv('https://www.ryugod.com/pages/ide/python'))
-    print(url.to_csv(['https://www.ryugod.com/pages/ide/python',
-                               'https://www.youtube.com/watch?v=W1htfqXyX6M&ab_channel=PhilipDeFranco']))
-    print(url.to_csv_file('test', ['https://www.ryugod.com/pages/ide/python',
-                               'https://www.youtube.com/watch?v=W1htfqXyX6M&ab_channel=PhilipDeFranco']))
+    print(url.to_json('www.example.gov.bs/directory.xhtml'))
+    print(url.to_json('example.gov.bs'))
+    print(url.to_json('example.gov.bs/directory'))
+    print(url.to_json('www.example.com'))
+    print(url.to_json('https://www.example.com/directory'))
+    print(url.to_json('http://example.org/sub/cc/directory.txt'))
+    print(url.to_json('https://www.example.gov.bs/sub/cc/directory?docid=720&hl=en#dayone'))
+    print(url.to_json('https://www.example.gov.bs:7105/sub/cc/directory?docid=720&hl=en#dayone'))
+    print(url.to_json('https://www.example.gov.bs:7102'))
+    print(url.to_json('https://93.184.216.34:7102'))
+    print(url.to_json('https://93.184.216.34:7105/sub/cc/directory?docid=720&hl=en#dayone'))
+    print(url.to_json('example.com/path/?#'))
+    print(url.to_json('example.com/path/#'))
+    print(url.to_json('example.com/path/?'))
 
 class Email:
     def __init__(self):
@@ -105,6 +99,19 @@ class Email:
 class Url:
     def __init__(self):
         self.shared = Shared()
+        self.header = ["url", "scheme", "subdomain", "second_level_domain", 
+                       "top_level_domain","port", "path", "query", "fragment"]
+        self.field_generator = lambda entry, details: [
+                entry, 
+                details['scheme'], 
+                details['subdomain'], 
+                details['second_level_domain'], 
+                details['top_level_domain'], 
+                details['port'],
+                details['path'],
+                details['query'],
+                details['fragment']
+                ]
 
     def parse_url(self, url_string:str, tlds: list[str] = []) -> dict[str, dict[str, str]] | None:
         """ Parses url addresses into component parts
@@ -115,35 +122,53 @@ class Url:
         :return: dictionary containing url parsed into sub-parts
         :rtype: dict[str, str] | None
         """
-        if not isinstance(url_string, str) or not url_string:
+        if not isinstance(url_string, str) or len(url_string) == 0:
             return None
+        ip_present = False
         url_string = url_string.lower()
         temp_url_string = url_string
         
         url_dict = {url_string: {'scheme': '', 'subdomain': '', 'second_level_domain': '', 
-                    'top_level_domain': '', 'directories': ''}}
+                                 'top_level_domain': '', 'port': '', 'path': '', 
+                                 'query': '', 'fragment': ''}}
         schemes = ['https', 'http']
+        default_ports = {'https':"443", 'http':"80"}
         if not tlds:
             _, tlds = self.get_tld()
         scheme = url_string.split('://')[0]
-        if not any(tld in url_string for tld in tlds) or (len([scheme]) >= 2 and scheme not in schemes):
-            return None
         if '://' in url_string and scheme not in schemes:
             return None
         if scheme in schemes:
             url_dict[url_string]['scheme'], temp_url_string = url_string.split('://')
+            url_dict[url_string]['port'] = default_ports[url_dict[url_string]['scheme']]
+            
+
+        if ":" in temp_url_string:
+            domain_port_etc = temp_url_string.split(":")
+            port_etc = domain_port_etc[1].split("/")
+            url_dict[url_string]['port'] = port_etc[0]
+            port_etc.append("")
+            temp_url_string = domain_port_etc[0]+"/"+"/".join(port_etc[1:])
+
+        parts = temp_url_string.split("/")
+        parts = parts[0].split(".")
+        if all(part.isdigit() and 0 <= int(part) <= 255 for part in parts[:4]):
+            ip_present = True
+            url_dict[url_string]['top_level_domain'] = ".".join(parts[:4])
+
+        if ip_present is False and not any(tld in url_string for tld in tlds):
+            url_dict[url_string]['scheme'] = ""
+            url_dict[url_string]['port'] = ""
+            return url_dict
 
         temp = temp_url_string.split('.')
         match len(temp):
             case 2:
                 #example.org or example.org/directory
                 tld_and_dir = temp[1].split('/')
-                url_dict[url_string]['top_level_domain'] = tld_and_dir[0] if tld_and_dir[0] in tlds else ''
-                if not url_dict[url_string]['top_level_domain']:
-                    return None
-                url_dict[url_string]['second_level_domain'] = temp[0]
-                url_dict[url_string]['directories'] = "/".join(tld_and_dir[1:])
-                return url_dict
+                if tld_and_dir[0] in tlds:
+                    url_dict[url_string]['second_level_domain'] = temp[0]
+                    url_dict[url_string]['top_level_domain'] = tld_and_dir[0]
             case 3:
                 tld_and_dir = temp[2].split('/')
                 if tld_and_dir[0] in tlds:
@@ -151,22 +176,18 @@ class Url:
                         #example.gov.bs or example.gov.bs/directory
                         url_dict[url_string]['second_level_domain'] = temp[0]
                         url_dict[url_string]['top_level_domain'] = ".".join([temp[1], tld_and_dir[0]])
-                        url_dict[url_string]['directories'] = "/".join(tld_and_dir[1:])
-                        return url_dict
-                    #www.example.com or www.example.com/directory
-                    url_dict[url_string]['subdomain'] = temp[0]
-                    url_dict[url_string]['second_level_domain'] = temp[1]
-                    url_dict[url_string]['top_level_domain'] = tld_and_dir[0]
-                    url_dict[url_string]['directories'] = "/".join(tld_and_dir[1:])
-                    return url_dict
-                #example.org/directory.txt
-                url_dict[url_string]['second_level_domain'] = temp[0]
-                temp = ".".join(temp[1:]).split('/')
-                url_dict[url_string]['top_level_domain'] = temp[0] if temp[0] in tlds else ''
-                if not url_dict[url_string]['top_level_domain']:
-                    return None
-                url_dict[url_string]['directories'] = "/".join(temp[1:])
-                return url_dict
+                    else:
+                        #www.example.com or www.example.com/directory
+                        url_dict[url_string]['subdomain'] = temp[0]
+                        url_dict[url_string]['second_level_domain'] = temp[1]
+                        url_dict[url_string]['top_level_domain'] = tld_and_dir[0]
+                else:
+                    #example.org/directory.txt
+                    if temp[1].split("/")[0] in tlds:
+                        url_dict[url_string]['second_level_domain'] = temp[0]
+                        temp = ".".join(temp[1:]).split('/')
+                        url_dict[url_string]['top_level_domain'] = temp[0]
+                        tld_and_dir = temp[:]
             case 4:
                 tld_and_dir = ".".join(temp[2:]).split('/')
                 if all(tld in tlds for tld in tld_and_dir[0].split('.')):
@@ -174,8 +195,6 @@ class Url:
                     url_dict[url_string]['subdomain'] = temp[0]
                     url_dict[url_string]['second_level_domain'] = temp[1]
                     url_dict[url_string]['top_level_domain'] = tld_and_dir[0]
-                    url_dict[url_string]['directories'] = "/".join(tld_and_dir[1:])
-                    return url_dict
             case 5:
                 tld_and_dir = ".".join(temp[3:]).split('/')
                 if all(tld in tlds for tld in [temp[2], tld_and_dir[0]]):
@@ -183,9 +202,37 @@ class Url:
                     url_dict[url_string]['subdomain'] = temp[0]
                     url_dict[url_string]['second_level_domain'] = temp[1]
                     url_dict[url_string]['top_level_domain'] = ".".join([temp[2], tld_and_dir[0]])
-                    url_dict[url_string]['directories'] = ".".join(tld_and_dir[1:])
-                    return url_dict
-        return None
+            case _:
+                url_dict[url_string]['scheme'] = ""
+                return url_dict
+
+        if url_dict[url_string]['top_level_domain'] == "":
+            url_dict[url_string]['scheme'] = ""
+            url_dict[url_string]['port'] = ""
+            return url_dict
+
+        path_query_fragment =  "/".join(tld_and_dir[1:])
+        if "?" not in path_query_fragment and "#" not in path_query_fragment:
+            path = path_query_fragment.strip("/")
+            url_dict[url_string]['path'] = path
+
+        elif "?" in path_query_fragment:
+            path_query = [value.strip("/") for value in path_query_fragment.split("?")]
+            url_dict[url_string]['path'] = path_query[0]
+            if "#" in path_query[1]:
+                fragment = path_query[1].split("#")
+                url_dict[url_string]['query'] = fragment[0]
+                if len(fragment) >= 2:
+                    url_dict[url_string]['fragment'] = "".join(fragment[1:])
+            elif len(path_query) >= 2:
+                url_dict[url_string]['query'] = "".join(path_query[1:])
+        elif "#" in path_query_fragment:
+            fragment = [value.strip("/") for value in path_query_fragment.split("#")]
+            url_dict[url_string]['path'] = fragment[0]
+            if len(fragment) >= 2:
+                url_dict[url_string]['fragment'] = "".join(fragment[1:])
+        
+        return url_dict
 
     def parse_url_array(self, urls: list[str], tlds: list[str] = []) -> dict[str, str] | None:
         """Parses each url in an array
@@ -220,28 +267,10 @@ class Url:
         return "File successfully written"
 
     def to_csv(self, urls: list[str] | str) -> str | None:
-        header = ["url", "scheme", "subdomain", "second_level_domain", "top_level_domain", "directories"]
-        field_generator = lambda entry, details: [
-                entry, 
-                details['scheme'], 
-                details['subdomain'], 
-                details['second_level_domain'], 
-                details['top_level_domain'], 
-                details['directories']
-                ]
-        return self.shared._to_csv(header, field_generator, self.parse_url, self.parse_url_array, urls)
+        return self.shared._to_csv(self.header, self.field_generator, self.parse_url, self.parse_url_array, urls)
 
     def to_csv_file(self, file_name, urls: list[str] | str) -> str:
-        header = ["url", "scheme", "subdomain", "second_level_domain", "top_level_domain", "directories"]
-        field_generator = lambda entry, details: [
-                entry, 
-                details['scheme'], 
-                details['subdomain'], 
-                details['second_level_domain'], 
-                details['top_level_domain'], 
-                details['directories']
-                ]
-        success = self.shared._to_csv_file(header, field_generator, self.parse_url, self.parse_url_array, file_name, urls)
+        success = self.shared._to_csv_file(self.header, self.field_generator, self.parse_url, self.parse_url_array, file_name, urls)
         if not success:
             return "Failed to write file"
         return "File successfully written"

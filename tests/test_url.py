@@ -12,7 +12,10 @@ class TestUrl(unittest.TestCase):
             'subdomain': '',
             'second_level_domain': 'example',
             'top_level_domain': 'com',
-            'directories': ''
+            'port': '',
+            'path': '',
+            'query': '',
+            'fragment': ''
             }
          })
 
@@ -26,7 +29,10 @@ class TestUrl(unittest.TestCase):
             'subdomain': 'www',
             'second_level_domain': 'example',
             'top_level_domain': 'com',
-            'directories': ''
+            'port': '',
+            'path': '',
+            'query': '',
+            'fragment': ''
             }
          })
 
@@ -40,12 +46,15 @@ class TestUrl(unittest.TestCase):
             'subdomain': '',
             'second_level_domain': 'example',
             'top_level_domain': 'com',
-            'directories': ''
+            'port': '443',
+            'path': '',
+            'query': '',
+            'fragment': ''
             }
          })
 
     def test_parse_url_with_directory(self):
-        """Test parsing URL with directories"""
+        """Test parsing URL with path"""
         result = url.parse_url('example.com/path/to/resource')
         self.assertEqual(result, 
         {'example.com/path/to/resource':
@@ -54,7 +63,10 @@ class TestUrl(unittest.TestCase):
             'subdomain': '',
             'second_level_domain': 'example',
             'top_level_domain': 'com',
-            'directories': 'path/to/resource'
+            'port': '',
+            'path': 'path/to/resource',
+            'query': '',
+            'fragment': ''
             }
          })
 
@@ -68,7 +80,10 @@ class TestUrl(unittest.TestCase):
             'subdomain': 'www',
             'second_level_domain': 'example',
             'top_level_domain': 'com',
-            'directories': 'path/to/resource.html'
+            'port':'443',
+            'path': 'path/to/resource.html',
+            'query': '',
+            'fragment': ''
             }
          })
 
@@ -82,7 +97,10 @@ class TestUrl(unittest.TestCase):
             'subdomain': '',
             'second_level_domain': 'data',
             'top_level_domain': 'gov.uk',
-            'directories': 'dataset'
+            'port': '443',
+            'path': 'dataset',
+            'query': '',
+            'fragment': ''
             }
          })
 
@@ -110,7 +128,19 @@ class TestUrl(unittest.TestCase):
     def test_parse_url_invalid_tld(self):
         """Test parsing URL with invalid top-level domain"""
         result = url.parse_url('example.invalidtld')
-        self.assertIsNone(result)
+        self.assertEqual(result, 
+        {'example.invalidtld':
+            {
+            'scheme': '',
+            'subdomain': '',
+            'second_level_domain': '',
+            'top_level_domain': '',
+            'port': '',
+            'path': '',
+            'query': '',
+            'fragment': ''
+            }
+        })
 
     def test_url_array_valid(self):
         """Test parsing array of valid URLs"""
@@ -123,7 +153,10 @@ class TestUrl(unittest.TestCase):
                 'subdomain': '',
                 'second_level_domain': 'example',
                 'top_level_domain': 'com',
-                'directories': ''
+                'port': '',
+                'path': '',
+                'query': '',
+                'fragment': ''
             }, 
          'www.test.org':
             {
@@ -131,7 +164,10 @@ class TestUrl(unittest.TestCase):
                 'subdomain': 'www',
                 'second_level_domain': 'test',
                 'top_level_domain': 'org',
-                'directories': ''
+                'port': '',
+                'path': '',
+                'query': '',
+                'fragment': ''
             }
          })
 
@@ -147,13 +183,27 @@ class TestUrl(unittest.TestCase):
         urls = ['example.com', 'test.org']
         result = url.to_json(urls)
         self.assertIsInstance(result, str)
-        self.assertIn('"second_level_domain": "example", "top_level_domain": "com"', result)
-        self.assertIn('"second_level_domain": "test", "top_level_domain": "org"', result)
+        self.assertIn('"second_level_domain": "example"', result)
+        self.assertIn('"top_level_domain": "com"', result)
+        self.assertIn('"second_level_domain": "test"', result)
+        self.assertIn('"top_level_domain": "org"', result)
 
     def test_to_json_invalid_url(self):
         """Test JSON conversion of invalid URL"""
-        result = url.to_json('invalid.invalidtld')
-        self.assertIsNone(result)
+        result = url.to_json('invalid.invalidtld', prettify=False)
+        self.assertEqual(result, 
+        ('{"invalid.invalidtld": '
+            '{'
+            '"scheme": "", '
+            '"subdomain": "", '
+            '"second_level_domain": "", '
+            '"top_level_domain": "", '
+            '"port": "", '
+            '"path": "", '
+            '"query": "", '
+            '"fragment": ""'
+            '}'
+        '}'))
 
     def test_to_json_empty(self):
         """Test JSON conversion of empty list"""
@@ -167,14 +217,230 @@ class TestUrl(unittest.TestCase):
         """Test parsing URL with custom TLD list"""
         custom_tlds = ['com', 'net', 'custom']
         result = url.parse_url('example.custom', tlds=custom_tlds)
-        self.assertEqual(result, {'example.custom':
-        {
+        self.assertEqual(result, 
+        {'example.custom':
+            {
             'scheme': '',
             'subdomain': '',
             'second_level_domain': 'example',
             'top_level_domain': 'custom',
-            'directories': ''
-        }})
+            'port': '',
+            'path': '',
+            'query': '',
+            'fragment': ''
+            }
+        })
+
+    def test_parse_url_with_port(self):
+        """Test parsing URL with explicit port"""
+        result = url.parse_url('example.com:8080')
+        self.assertEqual(result, 
+        {'example.com:8080': 
+            {
+            'scheme': '',
+            'subdomain': '',
+            'second_level_domain': 'example',
+            'top_level_domain': 'com',
+            'port': '8080',
+            'path': '',
+            'query': '',
+            'fragment': ''
+            }
+        })
+
+    def test_parse_url_default_ports(self):
+        """Test parsing URLs with default ports for http/https"""
+        cases = [
+            ('http://example.com', '80'),
+            ('https://example.com', '443')
+        ]
+        for test_url, expected_port in cases:
+            result = url.parse_url(test_url)
+            self.assertEqual(result[test_url]['port'], expected_port)
+
+    def test_parse_url_with_query(self):
+        """Test parsing URL with query parameters"""
+        result = url.parse_url('example.com/search?q=test&page=1')
+        self.assertEqual(result, 
+        {'example.com/search?q=test&page=1': 
+            {
+            'scheme': '',
+            'subdomain': '',
+            'second_level_domain': 'example',
+            'top_level_domain': 'com',
+            'port': '',
+            'path': 'search',
+            'query': 'q=test&page=1',
+            'fragment': ''
+            }
+        })
+
+    def test_parse_url_with_fragment(self):
+        """Test parsing URL with fragment"""
+        result = url.parse_url('example.com/page#section1')
+        self.assertEqual(result, 
+        {'example.com/page#section1': 
+            {
+            'scheme': '',
+            'subdomain': '',
+            'second_level_domain': 'example',
+            'top_level_domain': 'com',
+            'port': '',
+            'path': 'page',
+            'query': '',
+            'fragment': 'section1'
+            }
+        })
+
+    def test_parse_url_complex_path(self):
+        """Test parsing URL with complex path including file extension"""
+        result = url.parse_url('example.com/blog/2023/post.html')
+        self.assertEqual(result, 
+        {'example.com/blog/2023/post.html': 
+            {
+            'scheme': '',
+            'subdomain': '',
+            'second_level_domain': 'example',
+            'top_level_domain': 'com',
+            'port': '',
+            'path': 'blog/2023/post.html',
+            'query': '',
+            'fragment': ''
+            }
+        })
+
+    def test_parse_url_all_components(self):
+        """Test parsing URL with all possible components"""
+        test_url = 'https://www.example.com:8443/path/to/page.html?q=search&lang=en#section2'
+        result = url.parse_url(test_url)
+        self.assertEqual(result, 
+        {'https://www.example.com:8443/path/to/page.html?q=search&lang=en#section2': 
+            {
+            'scheme': 'https',
+            'subdomain': 'www',
+            'second_level_domain': 'example',
+            'top_level_domain': 'com',
+            'port': '8443',
+            'path': 'path/to/page.html',
+            'query': 'q=search&lang=en',
+            'fragment': 'section2'
+            }
+        })
+
+    def test_parse_url_query_and_fragment(self):
+        """Test parsing URL with both query parameters and fragment"""
+        result = url.parse_url('example.com/search?q=test#results')
+        self.assertEqual(result, 
+        {'example.com/search?q=test#results': 
+            {
+            'scheme': '',
+            'subdomain': '',
+            'second_level_domain': 'example',
+            'top_level_domain': 'com',
+            'port': '',
+            'path': 'search',
+            'query': 'q=test',
+            'fragment': 'results'
+            }
+        })
+
+    def test_parse_url_multiple_query_params(self):
+        """Test parsing URL with multiple query parameters"""
+        result = url.parse_url('example.com/search?q=test&page=1&sort=desc')
+        self.assertEqual(result,
+        {'example.com/search?q=test&page=1&sort=desc': 
+            {
+            'scheme': '',
+            'subdomain': '',
+            'second_level_domain': 'example',
+            'top_level_domain': 'com',
+            'port': '',
+            'path': 'search',
+            'query': 'q=test&page=1&sort=desc',
+            'fragment': ''
+            }
+        })
+
+    def test_parse_url_special_chars_in_path(self):
+        """Test parsing URL with special characters in path"""
+        result = url.parse_url('example.com/path-with_special.chars')
+        self.assertEqual(result, 
+        {'example.com/path-with_special.chars': 
+            {
+            'scheme': '',
+            'subdomain': '',
+            'second_level_domain': 'example',
+            'top_level_domain': 'com',
+            'port': '',
+            'path': 'path-with_special.chars',
+            'query': '',
+            'fragment': ''
+            }
+        })
+
+    def test_parse_url_ip_address(self):
+        """Test parsing URL with IP address"""
+        result = url.parse_url('https://192.168.1.1:8080/admin')
+        self.assertEqual(result, 
+        {'https://192.168.1.1:8080/admin': 
+            {
+            'scheme': 'https',
+            'subdomain': '',
+            'second_level_domain': '',
+            'top_level_domain': '192.168.1.1',
+            'port': '8080',
+            'path': 'admin',
+            'query': '',
+            'fragment': ''
+            }
+        })
+        result = url.parse_url('https://192.168.1.1/admin')
+        self.assertEqual(result, 
+        {'https://192.168.1.1/admin': 
+            {
+            'scheme': 'https',
+            'subdomain': '',
+            'second_level_domain': '',
+            'top_level_domain': '192.168.1.1',
+            'port': '443',
+            'path': 'admin',
+            'query': '',
+            'fragment': ''
+            }
+        })
+        result = url.parse_url('192.168.1.1/admin')
+        self.assertEqual(result, 
+        {'192.168.1.1/admin': 
+            {
+            'scheme': '',
+            'subdomain': '',
+            'second_level_domain': '',
+            'top_level_domain': '192.168.1.1',
+            'port': '',
+            'path': 'admin',
+            'query': '',
+            'fragment': ''
+            }
+        })
+
+    def test_parse_url_empty_components(self):
+        """Test parsing URL with empty components between delimiters"""
+        urls = ['example.com/path/?#', 'example.com/path/#', 'example.com/path/?']
+        for url_item in urls:
+            result = url.parse_url(url_item)
+            self.assertEqual(result, 
+            {url_item: 
+               {
+                'scheme': '',
+                'subdomain': '',
+                'second_level_domain': 'example',
+                'top_level_domain': 'com',
+                'port': '',
+                'path': 'path',
+                'query': '',
+                'fragment': ''
+                }
+            })
 
     def test_get_tld(self):
         """Test fetching TLDs from IANA"""
@@ -210,7 +476,8 @@ class TestUrl(unittest.TestCase):
     def test_to_csv_invalid_url(self):
         """Test CSV conversion of invalid URL"""
         result = url.to_csv('invalid.invalidtld')
-        self.assertIsNone(result)
+        self.assertEqual(result,
+        'url,scheme,subdomain,second_level_domain,top_level_domain,port,path,query,fragment\r\ninvalid.invalidtld,,,,,,,,\r\n')
 
     def test_to_csv_empty(self):
         """Test CSV conversion of empty list"""
