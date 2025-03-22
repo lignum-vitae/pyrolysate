@@ -120,10 +120,12 @@ class TestUrl(unittest.TestCase):
 
     def test_parse_empty_url_array(self):
         """Test parsing URL with invalid scheme"""
+        result = url.parse_url_array([])
+        self.assertIsNone(result)
+
         urls = [[''], [], '']
-        for x in urls:
-            result = url.parse_url_array(x)
-            self.assertIsNone(result)
+        result = url.parse_url_array(urls)
+        self.assertIsNone(result)
 
     def test_parse_url_invalid_tld(self):
         """Test parsing URL with invalid top-level domain"""

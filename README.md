@@ -17,7 +17,7 @@ python converter.py
 pip install pyrolysate
 ```
 ## Testing
-To run all tests from command line, run one of the following commands
+To run all tests from command line, run one of the following commands from the project's root directory
 ```bash
 py -m unittest discover tests
 python -m unittest discover tests

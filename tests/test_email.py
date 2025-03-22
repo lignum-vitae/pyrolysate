@@ -57,6 +57,10 @@ class TestEmail(unittest.TestCase):
         result = email.parse_email_array([])
         self.assertIsNone(result)
 
+        emails = [[''], [], '']
+        result = email.parse_email_array(emails)
+        self.assertIsNone(result)
+
     def test_email_empty(self):
         """Test parsing empty email array"""
         result = email.parse_email("")

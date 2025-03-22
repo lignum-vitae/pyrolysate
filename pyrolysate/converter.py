@@ -7,26 +7,7 @@ from typing import Generator
 import collections.abc
 
 def main():
-    print(url.to_json('www.example.gov.bs/directory.xhtml'))
-    print(url.to_json('example.gov.bs'))
-    print(url.to_json('example.gov.bs/directory'))
-    print(url.to_json('www.example.com'))
-    print(url.to_json('https://www.example.com/directory'))
-    print(url.to_json('http://example.org/sub/cc/directory.txt'))
-    print(url.to_json('https://www.example.gov.bs/sub/cc/directory?docid=720&hl=en#dayone'))
-    print(url.to_json('https://www.example.gov.bs:7105/sub/cc/directory?docid=720&hl=en#dayone'))
-    print(url.to_json('https://www.example.gov.bs:7102'))
-    print(url.to_json('https://93.184.216.34:7102'))
-    print(url.to_json('https://93.184.216.34:7105/sub/cc/directory?docid=720&hl=en#dayone'))
-    print(url.to_json('example.com/path/?#'))
-    print(url.to_json('example.com/path/#'))
-    print(url.to_json('example.com/path/?'))
-    print(url.to_json(['example.com/path/?', 'example.com/path/#', 'example.com/path/?#']))
-    print(url.to_csv('https://www.example.gov.bs:7105/sub/cc/directory?docid=720&hl=en#dayone'))
-    print(email.to_json('example@gmail.com'))
-    print(email.to_json_file('test_email', ['example@gmail.com', 'test1@hotmail.com']))
-    print(email.to_csv('example@gmail.com'))
-    print(email.to_csv_file('test_email', ['example@gmail.com', 'test1@hotmail.com']))
+    pass
 
 class Email:
     def __init__(self):
@@ -46,6 +27,8 @@ class Email:
         :return: Dictionary containing email parsed into sub-parts
         :rtype: dict[str, dict[str, str]] | None
         """
+        if not isinstance(e_mail_string, str) or len(e_mail_string) == 0:
+            return None
         email_dict = {e_mail_string: {"username": "", "mail_server": "", "domain": "", }}
         temp = e_mail_string.split('@')
         if len(temp) != 2: 
@@ -59,7 +42,28 @@ class Email:
         email_dict[e_mail_string]["domain"] = ".".join(server_and_domain[1:])
         return email_dict
 
-    def parse_email_array(self, emails: list[str]) -> Generator[dict[str, dict[str, str]], None, None] | None:
+    def parse_email_array(self, emails: list[str]) -> dict[str, dict[str, str]] | None:
+        """Parses each email in an array
+        :param emails: list of emails
+        :type emails: list[str]
+        :return: parsed list of emails in a dictionary
+        :rtype: dict[str, dict[str, str]] | None
+        """
+        results = self._parse_email_array(emails)
+        if results == None:
+            return None
+
+        email_array = {}
+        for result in results:
+            if result == None:
+                continue
+            email_array.update(result)
+
+        if email_array == {}:
+            return None
+        return email_array
+
+    def _parse_email_array(self, emails: list[str]) -> Generator[dict[str, dict[str, str]], None, None] | None:
         """Parses each email in an array
         :param emails: list of emails
         :type emails: list[str]
@@ -80,7 +84,7 @@ class Email:
         :return: A JSON string of the parsed emails or None if the input is invalid or empty.
         :rtype: str | None
         """
-        return self.shared._to_json(self.parse_email, self.parse_email_array, emails, prettify)
+        return self.shared._to_json(self.parse_email, self._parse_email_array, emails, prettify)
 
     def to_json_file(self, file_name: str, emails: list[str], prettify: bool=True) -> tuple[str, int]:
         """Writes parsed emails to a JSON file.
@@ -93,7 +97,7 @@ class Email:
         :return: A tuple containing the file name with extension and an int. 0 for a pass, 1 for a fail.
         :rtype: tuple[str, int]
         """
-        return self.shared._to_json_file(self.parse_email, self.parse_email_array, file_name, emails, prettify)
+        return self.shared._to_json_file(self.parse_email, self._parse_email_array, file_name, emails, prettify)
 
     def to_csv(self, emails: list[str] | str) -> str | None:
         """Creates a CSV string representation of URLs.
@@ -102,7 +106,7 @@ class Email:
         :return: A CSV string of the parsed URLs or None if the input is invalid or empty.
         :rtype: str | None
         """
-        return self.shared._to_csv(self.header, self.field_generator, self.parse_email, self.parse_email_array, emails)
+        return self.shared._to_csv(self.header, self.field_generator, self.parse_email, self._parse_email_array, emails)
 
     def to_csv_file(self, file_name, urls: list[str] | str) -> tuple[str, int]:
         """Writes parsed emails to a CSV file.
@@ -113,7 +117,7 @@ class Email:
         :return: A tuple containing the file name with extension and an int. 0 for a pass, 1 for a fail.
         :rtype: tuple[str, int]
         """
-        return self.shared._to_csv_file(self.header, self.field_generator, self.parse_email, self.parse_email_array, file_name, urls)
+        return self.shared._to_csv_file(self.header, self.field_generator, self.parse_email, self._parse_email_array, file_name, urls)
 
 class Url:
     def __init__(self):
@@ -254,7 +258,30 @@ class Url:
         
         return url_dict
 
-    def parse_url_array(self, urls: list[str], tlds: list[str] = []) -> Generator[dict[str, dict[str, str]], None, None] | None:
+    def parse_url_array(self, urls: list[str], tlds: list[str] = []) -> dict[str, dict[str, str]] | None:
+        """Parses each url in an array
+        :param urls: list of urls
+        :type urls: list[str]
+        :return: parsed list of urls in a dictionary
+        :rtype: dict[str, dict[str, str]] | None
+        """
+        if not urls or all(item == "" for item in urls) or not isinstance(urls, list):
+            return None
+        results = self._parse_url_array(urls, tlds)
+        if results == None:
+            return None
+
+        url_array = {}
+        for result in results:
+            if result == None:
+                continue
+            url_array.update(result)
+
+        if url_array == {}:
+            return None
+        return url_array
+
+    def _parse_url_array(self, urls: list[str], tlds: list[str] = []) -> Generator[dict[str, dict[str, str]], None, None] | None:
         """Parses each url in an array
         :param urls: list of urls
         :type urls: list[str]
@@ -277,7 +304,7 @@ class Url:
         :return: A JSON string of the parsed URLs or None if the input is invalid or empty.
         :rtype: str | None
         """
-        return self.shared._to_json(self.parse_url, self.parse_url_array, urls, prettify)
+        return self.shared._to_json(self.parse_url, self._parse_url_array, urls, prettify)
 
     def to_json_file(self, file_name: str, urls: list[str], prettify: bool=True) -> tuple[str, int]:
         """Writes parsed URLs to a JSON file.
@@ -290,7 +317,7 @@ class Url:
         :return: A tuple containing the file name with extension and an int. 0 for a pass, 1 for a fail.
         :rtype: tuple[str, int]
         """
-        return self.shared._to_json_file(self.parse_url, self.parse_url_array, file_name, urls, prettify)
+        return self.shared._to_json_file(self.parse_url, self._parse_url_array, file_name, urls, prettify)
 
     def to_csv(self, urls: list[str] | str) -> str | None:
         """Creates a CSV string representation of URLs.
@@ -299,7 +326,7 @@ class Url:
         :return: A CSV string of the parsed URLs or None if the input is invalid or empty.
         :rtype: str | None
         """
-        return self.shared._to_csv(self.header, self.field_generator, self.parse_url, self.parse_url_array, urls)
+        return self.shared._to_csv(self.header, self.field_generator, self.parse_url, self._parse_url_array, urls)
 
     def to_csv_file(self, file_name, urls: list[str] | str) -> tuple[str, int]:
         """Writes parsed URLs to a CSV file.
@@ -310,7 +337,7 @@ class Url:
         :return: A tuple containing the file name with extension and an int. 0 for a pass, 1 for a fail.
         :rtype: tuple[str, int]
         """
-        return self.shared._to_csv_file(self.header, self.field_generator, self.parse_url, self.parse_url_array, file_name, urls)
+        return self.shared._to_csv_file(self.header, self.field_generator, self.parse_url, self._parse_url_array, file_name, urls)
 
     @cache
     def get_tld(self) -> tuple[str, list[str]]:
