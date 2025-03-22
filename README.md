@@ -13,9 +13,17 @@ cd pyrolysate/pyrolysate
 python converter.py
 ```
 ### 2. Pip install (not yet available)
-```
+```bash
 pip install pyrolysate
 ```
+## Testing
+To run all tests from command line, run one of the following commands
+```bash
+py -m unittest discover tests
+python -m unittest discover tests
+python3 -m unittest discover tests
+```
+
 ## Features
 
 - Parse URLs and email addresses into structured data
@@ -24,6 +32,7 @@ pip install pyrolysate
 - Export to JSON and CSV formats
 - Fetch up-to-date TLD list from IANA
 - Support for IP addresses in URLs
+- Uses Python's built-in generators to handle large lists of URLs or email addresses without excessive memory consumption
 
 ## Usage
 
@@ -123,6 +132,11 @@ Example output:
 }
 ```
 
+```csv
+email,username,mail_server,domain
+user@gmail.com,user,gmail,com
+```
+
 
 ### URL Parse Output
 
@@ -151,6 +165,11 @@ Example output:
     "fragment": "section1"
     }
 }
+```
+
+```csv
+url,scheme,subdomain,second_level_domain,top_level_domain,port,path,query,fragment
+https://www.example.com:443/blog/post?q=test#section1,https,www,example,com,443,blog/post,q=test,section1
 ```
 
 ## Supported Formats
