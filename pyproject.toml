@@ -4,11 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyrolysate"
-version = "0.9.0"
+version = "0.10.0"
 authors = [
 	{ name ="Andrew Hennis", email="andrew.mr.hennis@gmail.com" },
 ]
-description = "Parser made to converted lists of emails and urls into JSON and CSV formatted files"
+description = "Parser made to convert lists of emails and urls into JSON and CSV formatted files"
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [

@@ -1,13 +1,21 @@
+import requests
+from datetime import datetime
+
+# built-ins
+# imports for converts
 import csv
 import json
-import requests
 from io import StringIO
+
+# function decorators for memoization
 from functools import cache
+
+# Generator type hints and type checking
 from typing import Generator
 import collections.abc
 
 def main():
-    pass
+    print(url.get_tld())
 
 class Email:
     def __init__(self):
@@ -136,7 +144,7 @@ class Url:
                 details['fragment']
                 ]
 
-    def parse_url(self, url_string:str, tlds: list[str] = []) -> dict[str, dict[str, str]] | None:
+    def parse_url(self, url_string:str, tlds: list[str] | None = None) -> dict[str, dict[str, str]] | None:
         """ Parses url addresses into component parts
         :param url_string: A string containing a url
         :type url_string: str
@@ -156,7 +164,7 @@ class Url:
                                  'query': '', 'fragment': ''}}
         schemes = ['https', 'http']
         default_ports = {'https':"443", 'http':"80"}
-        if not tlds:
+        if tlds is None:
             _, tlds = self.get_tld()
         scheme = url_string.split('://')[0]
         if '://' in url_string and scheme not in schemes:
@@ -258,7 +266,7 @@ class Url:
         
         return url_dict
 
-    def parse_url_array(self, urls: list[str], tlds: list[str] = []) -> dict[str, dict[str, str]] | None:
+    def parse_url_array(self, urls: list[str], tlds: list[str] | None = None) -> dict[str, dict[str, str]] | None:
         """Parses each url in an array
         :param urls: list of urls
         :type urls: list[str]
@@ -281,7 +289,7 @@ class Url:
             return None
         return url_array
 
-    def _parse_url_array(self, urls: list[str], tlds: list[str] = []) -> Generator[dict[str, dict[str, str]], None, None] | None:
+    def _parse_url_array(self, urls: list[str], tlds: list[str] | None = None) -> Generator[dict[str, dict[str, str]], None, None] | None:
         """Parses each url in an array
         :param urls: list of urls
         :type urls: list[str]
@@ -290,7 +298,7 @@ class Url:
         """
         if not urls or all(item == "" for item in urls) or not isinstance(urls, list):
             return None
-        if not tlds:
+        if tlds is None:
             _, tlds = self.get_tld()
         for url in urls:
             yield self.parse_url(url, tlds)
@@ -340,16 +348,34 @@ class Url:
         return self.shared._to_csv_file(self.header, self.field_generator, self.parse_url, self._parse_url_array, file_name, urls)
 
     @cache
-    def get_tld(self) -> tuple[str, list[str]]:
+    def get_tld(self, path_to_tlds_file: str = 'tld.txt') -> tuple[str, list[str]]:
         """ Grabs top level domains from internet assigned numbers authority
         :return: A tuple containing the last updated date and a list of top-level domains.
         :rtype: tuple[str, list[str]]
         """
-        response = requests.get('https://data.iana.org/TLD/tlds-alpha-by-domain.txt')
+        try:
+            response = requests.get('https://data.iana.org/TLD/tlds-alpha-by-domain.txt')
+        except requests.RequestException as e:
+            print(f"Error fetching TLD list: {e}")
+            print("Retrieving locally stored tlds")
         lines = response.text.split('\n')
         last_updated = lines[0]
         tlds = list(map(lambda x: x.lower(), filter(None, lines[1:]))) #removes empty strings from list of top level domains
         return last_updated, tlds
+
+    def local_tld_file(self, file_name: str = 'tld') -> tuple[str, int]:
+        if not isinstance(file_name, str):
+            return "Failed to write file. File name must be a string.", 1
+        ver_dated, tldss = self.get_tld() 
+        version, dated = ver_dated.split(",")
+
+        with open(f'{file_name}.txt', 'w') as file:
+            file.write(f"File Created: {datetime.now().strftime("%d %B %Y %H:%M")}\n")
+            file.write(f"{version}\n")
+            file.write(f"{dated}\n\n")
+            for tld in tldss:
+                file.write(f"{tld}\n")
+        return "File created successfully", 0
 
 class Shared:
     def _validate_data(self, string_parse, array_parse, data) -> Generator[dict[str, dict[str, str]], None, None] | dict[str, dict[str, str]] | None:
