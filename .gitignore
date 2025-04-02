@@ -5,3 +5,9 @@ __pycache__/
 # generated JSON and CSV files
 *.json
 *.csv
+
+# test input files
+test*.txt
+
+# distribution files
+dist/

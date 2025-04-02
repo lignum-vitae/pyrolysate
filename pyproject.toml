@@ -2,9 +2,26 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.envs.default]
+path = ".venv"
+dependencies = [
+    "requests"
+]
+
+[tool.hatch.envs.default.scripts]
+pyro = "python -m pyrolysate.cli {args}"
+dev = [
+    "pip uninstall pyrolysate -y",
+    "pip install -e ."
+]
+test = "python -m unittest discover tests"
+
+[tool.hatch.entry-points."console_scripts"]
+pyro = "pyrolysate.cli:main"
+
 [project]
 name = "pyrolysate"
-version = "0.10.0"
+version = "0.12.0"
 authors = [
 	{ name ="Andrew Hennis", email="andrew.mr.hennis@gmail.com" },
 ]
