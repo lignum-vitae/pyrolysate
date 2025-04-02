@@ -1,43 +1,110 @@
 # Pyrolysate
 
-A Python library for parsing URLs and email addresses into structured JSON and CSV formats. 
-The library handles various URL formats and email patterns, providing consistent output structures.
+Pyrolysate is a Python library and CLI tool for parsing and validating URLs and email addresses.
+It breaks down URLs and emails into their component parts, validates against IANA's official TLD list,
+and outputs structured data in JSON, CSV, or text format.
 
-## 🚀 Installation
-### 1. Clone the Repository
-First, clone the repository to your local machine using Git:
-
-```bash
-git clone https://github.com/lignum-vitae/pyrolysate
-cd pyrolysate/pyrolysate
-python converter.py
-```
-### 2. Pip install (not yet available)
-```bash
-pip install pyrolysate
-```
-## Testing
-To run all tests from command line, run one of the following commands from the project's root directory
-```bash
-py -m unittest discover tests
-python -m unittest discover tests
-python3 -m unittest discover tests
-```
+The library offers both a programmer-friendly API and a command-line interface,
+making it suitable for both development integration and quick data processing tasks.
+It handles single entries or large datasets efficiently using Python's generator functionality,
+and provides flexible input/output options including file processing with custom delimiters.
 
 ## Features
 
-- Parse URLs and email addresses into structured data
-- Support for complex URL patterns including ports, queries, and fragments
-- Support for government domain emails (.gov.tld)
-- Export to JSON and CSV formats
-- Fetch up-to-date TLD list from IANA
-- Support for IP addresses in URLs
-- Uses Python's built-in generators to handle large lists of URLs or email addresses without excessive memory consumption
+### URL Parsing
+  - Extract scheme, subdomain, domain, TLD, port, path, query, and fragment components
+  - Support for complex URL patterns including ports, queries, and fragments
+  - Support for IP addresses in URLs
+  - Support for both direct input and file processing via CLI or API
+  - Output as JSON, CSV, or text format through CLI or API
+
+### Email Parsing
+  - Extract username, mail server, and domain components
+  - Support for both direct input and file processing via CLI or API
+  - Output as JSON, CSV, or text format through CLI or API
+
+### Top Level Domain Validation
+  - Automatic updates from IANA's official TLD list
+  - Local TLD file caching for offline use
+  - Fallback to common TLDs if both online and local sources fail
+
+### Flexible Input/Output
+  - Process single or multiple entries
+  - Support for government domain emails (.gov.tld)
+  - Custom delimiters for file input
+  - Multiple output formats with .txt format as default (JSON, CSV, text)
+  - Pretty-printed or minified JSON output
+  - Console output or file saving options
+  - Memory-efficient processing of large datasets using Python generators
+
+### Developer Friendly
+  - Type hints for better IDE support
+  - Comprehensive docstrings
+  - Modular design for easy integration
+  - Command-line interface for quick testing
+
+## 🚀 Installation
+### From PyPI
+```bash
+pip install pyrolysate
+```
+### For Development
+1. **Clone the repository**
+```bash
+git clone https://github.com/dawnandrew100/pyrolysate.git
+cd pyrolysate
+```
+2. **Create and activate a virtual environment**
+```bash
+# Using hatch (recommended)
+hatch env create
+
+# Or using venv
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Unix/MacOS
+source .venv/bin/activate
+```
+3. **Install in development mode**
+```bash
+# Using hatch
+hatch run dev
+
+# Or using pip
+pip install -e .
+```
+### Verify Installation
+```bash
+# Using hatch (recommended)
+hatch run pyro -u example.com
+
+# Or using the CLI directly
+pyro -u example.com
+```
+The CLI command `pyro` will be available after installation. If the command isn't found, ensure Python's Scripts directory is in your PATH.
 
 ## Usage
 
+### Input File Parsing
+```python
+from pyrolysate import parse_input_file
+```
+#### Parse file with default newline delimiter
+```python
+urls = parse_input_file("urls.txt")
+```
+#### Parse file with custom delimiter
+```python
+emails = parse_input_file("emails.csv", delimiter=",")
+```
+### Supported Outputs
+- JSON (prettified or minified)
+- CSV
+- Text (default)
+- File output with custom naming
+- Console output
 ### Email Parsing
-
 ```python
 from pyrolysate import email
 ```
@@ -55,18 +122,27 @@ result = email.parse_email_array(emails)
 json_output = email.to_json("user@example.com")
 json_output = email.to_json(["user1@example.com", "user2@example.com"])
 ```
-#### Export to CSV
+#### Save to JSON file
+```python
+email.to_json_file("output", "user@example.com")
+email.to_json_file("output", ["user1@example.com", "user2@test.org"])
+```
+#### Convert to CSV
 ```python
 csv_output = email.to_csv("user@example.com")
-email.to_csv_file("output", ["user1@example.com", "user2@example.com"])
+csv_output = email.to_csv(["user1@example.com", "user2@test.org"])
+
+```
+#### Save to CSV file
+```python
+email.to_csv_file("output", "user@example.com")
+email.to_csv_file("output", ["user1@example.com", "user2@test.org"])
 ```
 
 ### URL Parsing
-
 ```python
 from pyrolysate import url
 ```
-
 #### Parse single URL
 ```python
 result = url.parse_url("https://www.example.com/path?q=test#fragment")
@@ -81,11 +157,60 @@ result = url.parse_url_array(urls)
 json_output = url.to_json("example.com")
 json_output = url.to_json(["example.com", "test.org"])
 ```
-#### Export to CSV
+#### Save to JSON file
+```python
+url.to_json_file("output", "example.com")
+url.to_json_file("output", ["example.com", "test.org"])
+```
+#### Convert to CSV
 ```python
 csv_output = url.to_csv("example.com")
+csv_output = url.to_csv(["example.com", "test.org"])
+
+```
+#### Save to CSV file
+```python
+url.to_csv_file("output", "example.com")
 url.to_csv_file("output", ["example.com", "test.org"])
 ```
+### Command Line Interface
+#### CLI help
+```bash
+pyro -h
+```
+#### Parse single URL
+```bash
+pyro -u example.com
+```
+#### Parse multiple URLs
+```bash
+pyro -u example1.com example2.com
+```
+#### Parse URLs from file (one per line by default)
+```bash
+pyro -u -i urls.txt
+```
+#### Parse URLs from CSV file with comma delimiter
+```bash
+pyro -u -i urls.csv -d ","
+```
+#### Parse multiple emails and save as JSON
+```bash
+pyro -e user1@example.com user2@example.com -j -o output
+```
+#### Parse URLs from file and save as CSV
+```bash
+pyro -u -i urls.txt -c -o parsed_urls
+```
+#### Parse emails from file with comma delimiter
+```bash
+pyro -e -i emails.txt -d "," -o output
+```
+#### Parse emails with non-prettified JSON output
+```bash
+pyro -e user@example.com -j -np
+```
+
 ## API Reference
 
 ### Email Class
@@ -101,15 +226,36 @@ url.to_csv_file("output", ["example.com", "test.org"])
 
 ### URL Class
 
-| Method                                         | Parameters                                            | Description                        |
-|------------------                              |----------------------                                 |-------------------                 |
-| `parse_url(url_str, tlds=[])`                  | `url_str: str`, `tlds: list[str]`                     | Parses single URL                  |
-| `parse_url_array(urls, tlds=[])`               | `urls: list[str]`, `tlds: list[str]`                  | Parses list of URLs                |
-| `to_json(urls, prettify=True)`                 | `urls: str\|list[str]`, `prettify: bool`              | Converts to JSON format            |
-| `to_json_file(file_name, urls, prettify=True)` | `file_name: str`, `urls: list[str]`, `prettify: bool` | Converts and saves JSON to file    |
-| `to_csv(urls)`                                 | `urls: str\|list[str]`                                | Converts to CSV format             |
-| `to_csv_file(file_name, urls)`                 | `file_name: str`, `urls: list[str]`                   | Converts and saves CSV to file     |
-| `get_tld()`                                    | None                                                  | Fetches current TLD list from IANA |
+| Method                                         | Parameters                                            | Description                                               |
+|------------------                              |----------------------                                 |-------------------                                        |
+| `parse_url(url_str, tlds=[])`                  | `url_str: str`, `tlds: list[str]`                     | Parses single URL                                         |
+| `parse_url_array(urls, tlds=[])`               | `urls: list[str]`, `tlds: list[str]`                  | Parses list of URLs                                       |
+| `to_json(urls, prettify=True)`                 | `urls: str\|list[str]`, `prettify: bool`              | Converts to JSON format                                   |
+| `to_json_file(file_name, urls, prettify=True)` | `file_name: str`, `urls: list[str]`, `prettify: bool` | Converts and saves JSON to file                           |
+| `to_csv(urls)`                                 | `urls: str\|list[str]`                                | Converts to CSV format                                    |
+| `to_csv_file(file_name, urls)`                 | `file_name: str`, `urls: list[str]`                   | Converts and saves CSV to file                            |
+| `get_tld(path_to_tlds_file='tld.txt')`         | `path_to_tlds_file: str = 'tld.txt'`                  | Fetches current TLD list from IANA                        |
+| `local_tld_file(file_name)`                    | `file_name: str`                                      | Fetches and stores `get_tld()` output as a local txt file |
+
+### Miscellaneous
+
+| Method                                              | Parameters                               | Description                                     |
+|------------------                                   |----------------------                    |-------------------------                        |
+| `parse_input_file(input_file_name, delimiter='\n')` | `input_file_name: str`, `delimiter: str` | Parses input file into python list by delimiter |
+
+## CLI Reference
+
+| Argument               | Type   | Value when argument is omitted| Description                        |
+|------------------------|--------|--------------------           |------------------------------------|
+| `target`               | `str`  | `None`                        | Email or URL string(s) to process  |
+| `-u`, `--url`          | `flag` | `False`                       | Specify URL input                  |
+| `-e`, `--email`        | `flag` | `False`                       | Specify Email input                |
+| `-i`, `--input_file`   | `str`  | `None`                        | Input file name with extension     |
+| `-o`, `--output_file`  | `str`  | `None`                        | Output file name without extension |
+| `-c`, `--csv`          | `flag` | `False`                       | Save output as CSV format          |
+| `-j`, `--json`         | `flag` | `False`                       | Save output as JSON format         |
+| `-np`, `--no_prettify` | `flag` | `True`                        | Turn off prettified JSON output    |
+| `-d`, `--delimiter`    | `str`  | `'\n'`                        | Delimiter for input file parsing   |
 
 ## Output Formats
 
@@ -189,3 +335,9 @@ https://www.example.com:443/blog/post?q=test#section1,https,www,example,com,443,
 - IP addresses: `192.168.1.1:8080`
 - Government domains: `agency.gov.uk`
 - Full complex URLs: `https://www.example.gov.uk:8080/path?q=test#section1`
+
+### Outputs
+- Text file (default)
+- JSON file (prettified or minified)
+- CSV file
+- Console output

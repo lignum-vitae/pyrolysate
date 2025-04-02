@@ -14,7 +14,6 @@ def main():
     parser.add_argument('-np', '--no_prettify', action = 'store_false',  help = 'Turn off prettified JSON output')
     parser.add_argument('-d', '--delimiter', type = str, default = '\n', help = 'The delimiter to use. Only valid when --input is provided.')
     args = parser.parse_args()
-    print(args)
 
     # Initialize the handler based on input type
     handler = url if args.url else email
