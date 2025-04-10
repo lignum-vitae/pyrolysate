@@ -15,7 +15,12 @@ from typing import Generator
 import collections.abc
 
 def main():
-    url.local_tld_file()
+    print(email.parse_email("user+facebook@gmail.com"))
+    print(email.to_csv("user+facebook@gmail.com"))
+    print(email.to_csv(["user+facebook@gmail.com", "football@hotmail.com", "happy+yoohoo@messenger.org"]))
+
+    print(url.to_csv("www.youtube.com"))
+    print(url.to_csv("www.youtube.com/directory.xhtml"))
 
 def parse_input_file(input_file_name: str, delimiter: str = '\n') -> list[str] | None:
     if not isinstance(input_file_name, str):
@@ -42,13 +47,9 @@ def parse_input_file(input_file_name: str, delimiter: str = '\n') -> list[str] |
 class Email:
     def __init__(self):
         self.shared = Shared()
-        self.header = ['email', 'username', 'mail_server', 'domain']
-        self.field_generator = lambda entry, details: [
-                entry, 
-                details['username'], 
-                details['mail_server'], 
-                details['domain'] 
-                ]
+        self.header = ['email', 'username', 'plus_address', 'mail_server', 'domain']
+        self.empty_dict = {field: "" for field in self.header[1:]}
+        self.field_generator = lambda entry, details: [entry] + [details[field] for field in self.header[1:]]
 
     def parse_email(self, e_mail_string: str) -> dict[str, dict[str, str]] | None:
         """ Parses email addresses into component parts
@@ -59,11 +60,16 @@ class Email:
         """
         if not isinstance(e_mail_string, str) or len(e_mail_string) == 0:
             return None
-        email_dict = {e_mail_string: {"username": "", "mail_server": "", "domain": "", }}
+        email_dict = {e_mail_string: self.empty_dict.copy()}
         temp = e_mail_string.split('@')
-        if len(temp) != 2: 
-            return None #returns none for invalid emails without @
-        email_dict[e_mail_string]["username"] = temp[0]
+        if len(temp) != 2:
+            return None #returns none for invalid emails without @ or multiple @
+        plus_address = temp[0].split('+')
+        if len(plus_address) == 2:
+            email_dict[e_mail_string]["username"] = plus_address[0]
+            email_dict[e_mail_string]["plus_address"] = plus_address[1]
+        else:
+            email_dict[e_mail_string]["username"] = temp[0]
         server_and_domain = temp[1].split('.')
         if len(server_and_domain) > 3:
             return None #invalid email with too many periods
@@ -154,19 +160,10 @@ class Url:
         self.shared = Shared()
         self.schemes_and_ports = {"https":"443", "http":"80"}
         self.two_part_tlds_lhs = ['gov', 'co', 'com', 'org', 'net', 'ac', 'edu', 'net', 'or', 'ne', 'go']
-        self.header = ["url", "scheme", "subdomain", "second_level_domain", 
+        self.header = ["url", "scheme", "subdomain", "second_level_domain",
                        "top_level_domain","port", "path", "query", "fragment"]
-        self.field_generator = lambda entry, details: [
-                entry, 
-                details['scheme'], 
-                details['subdomain'], 
-                details['second_level_domain'], 
-                details['top_level_domain'], 
-                details['port'],
-                details['path'],
-                details['query'],
-                details['fragment']
-                ]
+        self.empty_dict = {field: "" for field in self.header[1:]}
+        self.field_generator = lambda entry, details: [entry] + [details[field] for field in self.header[1:]]
 
     def parse_url(self, url_string:str, tlds: list[str] | None = None) -> dict[str, dict[str, str]] | None:
         """ Parses url addresses into component parts
@@ -183,9 +180,7 @@ class Url:
         url_string = url_string.lower()
         temp_url_string = url_string
 
-        url_dict = {url_string: {'scheme': '', 'subdomain': '', 'second_level_domain': '', 
-                                 'top_level_domain': '', 'port': '', 'path': '', 
-                                 'query': '', 'fragment': ''}}
+        url_dict = {url_string: self.empty_dict.copy()}
         if tlds is None:
             _, tlds = self.get_tld()
         scheme = url_string.split('://')[0]
@@ -506,7 +501,7 @@ class Shared:
         if not pretty:
             with open(f"{file_name}.json", 'w') as file:
                 json.dump(result, file)
-        if pretty:    
+        if pretty:
             with open(f"{file_name}.json", 'w') as file:
                 json.dump(result, file, indent=4)
         return "File successfully written", 0
@@ -519,14 +514,15 @@ class Shared:
         if isinstance(data, list) and len(data) >= 2:
             result = array_parse(data)
         if isinstance(result, collections.abc.Generator):
-            for item in result:
-                key = list(item)[0]
-                csv_writer.writerow(data_fields(key, item[key]))
+            for full_dict in result:
+                raw_input = list(full_dict)[0]
+                parsed_fields = full_dict[raw_input]
+                csv_writer.writerow(data_fields(raw_input, parsed_fields))
         else:
             if result is None:
                 return None
-            for entry, details in result.items():
-                csv_writer.writerow(data_fields(entry, details))
+            for raw_input, parsed_fields in result.items():
+                csv_writer.writerow(data_fields(raw_input, parsed_fields))
         csv_data = buffer.getvalue()
         buffer.close() #Close the StringIO object
         return csv_data
@@ -539,14 +535,15 @@ class Shared:
             if isinstance(data, list) and len(data) >= 2:
                 result = array_parse(data)
             if isinstance(result, collections.abc.Generator):
-                for item in result:
-                    key = list(item)[0]
-                    csv_writer.writerow(data_fields(key, item[key]))
+                for full_dict in result:
+                    raw_input = list(full_dict)[0]
+                    parsed_fields = full_dict[raw_input]
+                    csv_writer.writerow(data_fields(raw_input, parsed_fields))
             else:
                 if result is None:
                     return "Failed to write file", 1
-                for entry, details in result.items():
-                    csv_writer.writerow(data_fields(entry, details))
+                for raw_input, parsed_fields in result.items():
+                    csv_writer.writerow(data_fields(raw_input, parsed_fields))
         return "File successfully written", 0
 
 email = Email()

@@ -8,6 +8,7 @@ class TestEmail(unittest.TestCase):
         self.assertEqual(result, {
             'example@gmail.com': {
                 'username': 'example',
+                'plus_address': '',
                 'mail_server': 'gmail',
                 'domain': 'com'
             }
@@ -19,8 +20,59 @@ class TestEmail(unittest.TestCase):
         self.assertEqual(result, {
             'user@agency.gov.bs': {
                 'username': 'user',
+                'plus_address': '',
                 'mail_server': 'agency',
                 'domain': 'gov.bs'
+            }
+        })
+
+    def test_parse_email_with_plus(self):
+        """Test parsing of email addresses with plus addressing"""
+        result = email.parse_email('user+tag@gmail.com')
+        self.assertEqual(result, {
+            'user+tag@gmail.com': {
+                'username': 'user',
+                'plus_address': 'tag',
+                'mail_server': 'gmail',
+                'domain': 'com'
+            }
+        })
+
+    def test_parse_email_array_with_plus(self):
+        """Test parsing array of emails including plus addresses"""
+        emails = ['test1+spam@example.com', 'test2+shopping@domain.org']
+        result = email.parse_email_array(emails)
+        self.assertEqual(result, {
+            'test1+spam@example.com': {
+                'username': 'test1',
+                'plus_address': 'spam',
+                'mail_server': 'example',
+                'domain': 'com'
+            },
+            'test2+shopping@domain.org': {
+                'username': 'test2',
+                'plus_address': 'shopping',
+                'mail_server': 'domain',
+                'domain': 'org'
+            }
+        })
+
+    def test_parse_email_mixed_plus(self):
+        """Test parsing array with mixed plus and regular addresses"""
+        emails = ['regular@example.com', 'user+tag@domain.org']
+        result = email.parse_email_array(emails)
+        self.assertEqual(result, {
+            'regular@example.com': {
+                'username': 'regular',
+                'plus_address': '',
+                'mail_server': 'example',
+                'domain': 'com'
+            },
+            'user+tag@domain.org': {
+                'username': 'user',
+                'plus_address': 'tag',
+                'mail_server': 'domain',
+                'domain': 'org'
             }
         })
 
@@ -42,11 +94,13 @@ class TestEmail(unittest.TestCase):
             {
                 'test1@example.com': {
                     'username': 'test1',
+                    'plus_address': '',
                     'mail_server': 'example',
                     'domain': 'com'
                 },
                 'test2@domain.org': {
                     'username': 'test2',
+                    'plus_address': '',
                     'mail_server': 'domain',
                     'domain': 'org'
                 }

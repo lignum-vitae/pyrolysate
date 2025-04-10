@@ -20,6 +20,7 @@ and provides flexible input/output options including file processing with custom
 
 ### Email Parsing
   - Extract username, mail server, and domain components
+  - Support for plus addressing (e.g., user+tag@domain.com)
   - Support for both direct input and file processing via CLI or API
   - Output as JSON, CSV, or text format through CLI or API
 
@@ -112,6 +113,10 @@ from pyrolysate import email
 ```python
 result = email.parse_email("user@example.com")
 ```
+#### Parse plus addressed email
+```python
+result = email.parse_email("user+tag@example.com")
+```
 #### Parse multiple emails
 ```python
 emails = ["user1@example.com", "user2@agency.gov.uk"]
@@ -194,6 +199,10 @@ pyro -u -i urls.txt
 ```bash
 pyro -u -i urls.csv -d ","
 ```
+#### Parse email with plus addressing
+```bash
+pyro -e user+newsletter@example.com
+```
 #### Parse multiple emails and save as JSON
 ```bash
 pyro -e user1@example.com user2@example.com -j -o output
@@ -261,17 +270,20 @@ pyro -e user@example.com -j -np
 
 ### Email Parse Output
 
-| Field       | Description       | Example |
-|-------------|-------------------|---------|
-| username    | Part before @     | user    |
-| mail_server | Domain before TLD | gmail   |
-| domain      | Top-level domain  | com     |
+| Field        | Description                   | Example            |
+|--------------|-------------------------------|--------------------|
+| input        | Full email                    | user+tag@gmail.com |
+| username     | Part before + or @ symbol     | user               |
+| plus_address | Optional part between + and @ | tag                |
+| mail_server  | Domain before TLD             | gmail              |
+| domain       | Top-level domain              | com                |
 
 Example output:
 ```json
-{"user@gmail.com": 
+{"user+tag@gmail.com": 
     {
     "username": "user",
+    "plus_address": "tag",
     "mail_server": "gmail",
     "domain": "com"
     }
@@ -279,10 +291,9 @@ Example output:
 ```
 
 ```csv
-email,username,mail_server,domain
-user@gmail.com,user,gmail,com
+email,username,plus_address,mail_server,domain
+user+tag@gmail.com,user,tag,gmail,com
 ```
-
 
 ### URL Parse Output
 
@@ -322,6 +333,7 @@ https://www.example.com:443/blog/post?q=test#section1,https,www,example,com,443,
 
 ### Email Formats
 - Standard: `example@mail.com`
+- Plus Addresses: `example+tag@mail.com`
 - Government: `example@agency.gov.uk`
 
 ### URL Formats
