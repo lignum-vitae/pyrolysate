@@ -1,3 +1,9 @@
+[![Static Badge](https://img.shields.io/badge/Project_Name-Pyrolysate-blue)](https://github.com/lignum-vitae/pyrolysate)
+[![Python Version from PEP 621 TOML](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Flignum-vitae%2Fpyrolysate%2Fmain%2Fpyproject.toml)](https://github.com/lignum-vitae/pyrolysate)
+[![PyPI version](https://img.shields.io/pypi/v/pyrolysate.svg)](https://pypi.org/project/pyrolysate/)
+[![GitHub License](https://img.shields.io/github/license/lignum-vitae/pyrolysate)](https://github.com/lignum-vitae/pyrolysate/blob/main/LICENSE)
+[![GitHub branch check runs](https://img.shields.io/github/check-runs/lignum-vitae/pyrolysate/main)](https://github.com/lignum-vitae/pyrolysate)
+
 # Pyrolysate
 
 Pyrolysate is a Python library and CLI tool for parsing and validating URLs and email addresses.
