@@ -1,18 +1,25 @@
-# required installs
-import requests
-
-# built-ins
-import csv
-import json
-from io import StringIO
-from datetime import datetime
-
-# function decorators for memoization
+# Function decorators and caching
 from functools import cache
 
-# Generator type hints and type checking
+# Data formats and compression
+import bz2
+import gzip
+import lzma
+import zipfile
+import csv
+import json
+
+# Typing, type hints, and errors
 from typing import Generator
 import collections.abc
+import zlib
+
+# Standard library utilities
+from datetime import datetime
+from io import StringIO
+
+# HTTP requests (third-party)
+import requests
 
 def main():
     print(email.parse_email("user+facebook@gmail.com"))
@@ -22,9 +29,108 @@ def main():
     print(url.to_csv("www.youtube.com"))
     print(url.to_csv("www.youtube.com/directory.xhtml"))
 
+class _ZIP():
+    @staticmethod
+    def _read_zip_member(zip_file: zipfile.ZipFile, member_name: str, delimiter: str) -> list[str]:
+        """Read and parse a single member of a ZIP file.
+
+        Args:
+            zip_file: Open ZIP file object
+            member_name: Name of the member file to read
+            delimiter: String delimiter for splitting content
+
+        Returns:
+            List of non-empty strings from the file
+        """
+        try:
+            with zip_file.open(member_name) as file:
+                content = file.read().decode('utf-8')
+                return [x.strip() for x in content.split(delimiter) if x.strip()]
+        except UnicodeDecodeError as err:
+            print(f"Warning: Could not decode file {member_name}: {err}")
+            return []
+        except zipfile.BadZipFile as err:
+            print(f"Warning: Corrupted file in archive {member_name}: {err}")
+            return []
+        except Exception as err:
+            print(f"Warning: Error reading file {member_name}: {err}")
+            return []
+
+    @staticmethod
+    def _process_zip_file(file_path: str, delimiter: str) -> list[str] | None:
+        """Process a ZIP file and extract content from all text files.
+
+        Args:
+            file_path: Path to the ZIP file
+            delimiter: String delimiter for splitting content
+
+        Returns:
+            Combined list of strings from all text files, or None if processing fails
+        """
+        try:
+            with zipfile.ZipFile(file_path, 'r') as zip_file:
+                # Get all text files from the ZIP
+                text_files = [f for f in zip_file.namelist()
+                            if f.endswith(('.txt', '.csv', '.log'))]
+
+                if not text_files:
+                    print("No supported text files found in ZIP archive")
+                    return None
+
+                # Process all text files
+                temp = []
+                for text_file in text_files:
+                    lines = _ZIP._read_zip_member(zip_file, text_file, delimiter)
+                    temp.extend(lines)
+
+                return temp if temp != [] else None
+
+        except zipfile.BadZipFile as err:
+            print(f"Invalid ZIP file: {err}")
+            return None
+        except Exception as err:
+            print(f"Error processing ZIP file: {err}")
+            return None
+
 def parse_input_file(input_file_name: str, delimiter: str = '\n') -> list[str] | None:
     if not isinstance(input_file_name, str):
         return None
+
+    supp_compression = {
+        "bz2": (bz2, OSError),
+        "gz": (gzip, OSError),
+        "lzma": (lzma, lzma.LZMAError),
+        "xz": (lzma, lzma.LZMAError),
+        "zip": (zipfile, zipfile.BadZipFile)
+    }
+
+    extension = input_file_name.split(".")[-1]
+
+    if input_file_name.endswith('.zip'):
+        return _ZIP._process_zip_file(input_file_name, delimiter)
+
+    if extension in supp_compression:
+        comp_module, comp_error = supp_compression[extension]
+        try:
+            with comp_module.open(input_file_name, 'rt') as file:
+                result = file.read()
+                temp = [x.strip() for x in result.split(delimiter) if x != '']
+                return temp
+        except comp_error as err:
+            print(f"Compression error: {err}")
+            return None
+        except zlib.error as err:
+            print(f"Decompression failed: {err}")
+            return None
+        except FileNotFoundError:
+            print("The file does not exist.")
+            return None
+        except OSError as err:
+            print(f"OS error with compressed file: {err}")
+            return None
+        except EOFError:
+            print("Reached unexpected end of file. The file might be truncated.")
+            return None
     try:
         with open(input_file_name, 'r') as file:
             result = file.read()

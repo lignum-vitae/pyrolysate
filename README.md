@@ -43,6 +43,11 @@ and provides flexible input/output options including file processing with custom
   - Pretty-printed or minified JSON output
   - Console output or file saving options
   - Memory-efficient processing of large datasets using Python generators
+  - Support for compressed input files:
+    - ZIP archives (processes all text files within .zip)
+    - GZIP (.gz)
+    - BZIP2 (.bz2)
+    - LZMA (.xz, .lzma)
 
 ### Developer Friendly
   - Type hints for better IDE support
@@ -225,6 +230,20 @@ pyro -e -i emails.txt -d "," -o output
 ```bash
 pyro -e user@example.com -j -np
 ```
+#### Parse different file types
+```bash
+# Parse log file
+pyro -u -i server.log
+
+# Parse compressed log file
+pyro -u -i server.log.gz
+
+# Parse BZIP2 compressed file
+pyro -e -i emails.txt.bz2
+
+# Parse ZIP archive containing logs and text files
+pyro -u -i archive.zip
+```
 
 ## API Reference
 
@@ -271,6 +290,17 @@ pyro -e user@example.com -j -np
 | `-j`, `--json`         | `flag` | `False`                       | Save output as JSON format         |
 | `-np`, `--no_prettify` | `flag` | `True`                        | Turn off prettified JSON output    |
 | `-d`, `--delimiter`    | `str`  | `'\n'`                        | Delimiter for input file parsing   |
+
+### Input File Support
+| Format | Extension  | Description                    |
+|--------|------------|--------------------------------|
+| Text   | .txt       | Plain text files               |
+| Log    | .log       | Plain text log files           |
+| CSV    | .csv       | Comma-separated values         |
+| ZIP    | .zip       | Archives containing text files |
+| GZIP   | .gz        | GZIP compressed files          |
+| BZIP2  | .bz2       | BZIP2 compressed files         |
+| LZMA   | .xz, .lzma | LZMA compressed files          |
 
 ## Output Formats
 
@@ -353,6 +383,21 @@ https://www.example.com:443/blog/post?q=test#section1,https,www,example,com,443,
 - IP addresses: `192.168.1.1:8080`
 - Government domains: `agency.gov.uk`
 - Full complex URLs: `https://www.example.gov.uk:8080/path?q=test#section1`
+
+### Input File Support
+- Plain text files (.txt)
+- Plain text log files (.log)
+- Comma-separated values (.csv)
+- ZIP archives containing text files (.zip)
+- GZIP compressed files (.gz)
+- BZIP2 compressed files (.bz2)
+- LZMA compressed files (.xz, .lzma)
+
+#### ZIP Archive Support
+- Processes all text files within the archive (.txt, .csv, .log)
+- Handles nested directories
+- Continues processing if some files are corrupted
+- UTF-8 encoding expected for text files
 
 ### Outputs
 - Text file (default)

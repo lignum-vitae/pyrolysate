@@ -21,7 +21,7 @@ pyro = "pyrolysate.cli:main"
 
 [project]
 name = "pyrolysate"
-version = "0.12.0"
+version = "0.13.0"
 authors = [
 	{ name ="Andrew Hennis", email="andrew.mr.hennis@gmail.com" },
 ]
