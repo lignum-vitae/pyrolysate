@@ -1,6 +1,9 @@
 # Function decorators and caching
 from functools import cache
 
+# Async Support
+import asyncio
+
 # Data formats and compression
 import bz2
 import gzip
@@ -28,6 +31,20 @@ def main():
 
     print(url.to_csv("www.youtube.com"))
     print(url.to_csv("www.youtube.com/directory.xhtml"))
+
+class AsyncWrapper:
+    def __init__(self, func):
+        self._func = func
+        self.__name__ = getattr(func, "__name__", "AsyncWrapper")
+
+    def __call__(self, *args, **kwargs):
+        return self._func(*args, **kwargs)
+
+    async def run_async(self, *args, **kwargs):
+        return await asyncio.to_thread(self._func, *args, **kwargs)
+
+def async_support(func):
+    return AsyncWrapper(func)
 
 class _ZIP():
     @staticmethod
@@ -157,6 +174,7 @@ class Email:
         self.empty_dict = {field: "" for field in self.header[1:]}
         self.field_generator = lambda entry, details: [entry] + [details[field] for field in self.header[1:]]
 
+    @async_support
     def parse_email(self, e_mail_string: str) -> dict[str, dict[str, str]] | None:
         """ Parses email addresses into component parts
         :param e_mail_string: A string containing an email address
@@ -271,6 +289,7 @@ class Url:
         self.empty_dict = {field: "" for field in self.header[1:]}
         self.field_generator = lambda entry, details: [entry] + [details[field] for field in self.header[1:]]
 
+    @async_support
     def parse_url(self, url_string:str, tlds: list[str] | None = None) -> dict[str, dict[str, str]] | None:
         """ Parses url addresses into component parts
         :param url_string: A string containing a url
