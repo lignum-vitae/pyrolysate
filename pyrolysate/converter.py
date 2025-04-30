@@ -3,6 +3,7 @@ from functools import cache, update_wrapper
 
 # Async Support
 import asyncio
+import inspect
 import types
 
 # Data formats and compression
