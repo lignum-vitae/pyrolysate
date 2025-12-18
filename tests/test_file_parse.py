@@ -7,7 +7,8 @@ import zipfile
 import tempfile
 import shutil
 from pathlib import Path
-from pyrolysate.converter import parse_input_file
+
+from pyrolysate import file_to_list
 
 class TestInputFile(unittest.TestCase):
     def setUp(self):
@@ -44,79 +45,79 @@ class TestInputFile(unittest.TestCase):
     def test_parse_text_file(self):
         """Test parsing regular text file"""
         path = self.create_test_file('test.txt')
-        result = parse_input_file(str(path))
+        result = file_to_list(str(path))
         self.assertEqual(result, self.expected_result)
 
     def test_parse_bz2_file(self):
         """Test parsing bz2 compressed file"""
         path = self.create_test_file('test.bz2', compression='bz2')
-        result = parse_input_file(str(path))
+        result = file_to_list(str(path))
         self.assertEqual(result, self.expected_result)
 
     def test_parse_gzip_file(self):
         """Test parsing gzip compressed file"""
         path = self.create_test_file('test.gz', compression='gz')
-        result = parse_input_file(str(path))
+        result = file_to_list(str(path))
         self.assertEqual(result, self.expected_result)
 
     def test_parse_lzma_file(self):
         """Test parsing lzma compressed file"""
         path = self.create_test_file('test.lzma', compression='lzma')
-        result = parse_input_file(str(path))
+        result = file_to_list(str(path))
         self.assertEqual(result, self.expected_result)
 
     def test_parse_xz_file(self):
         """Test parsing xz compressed file"""
         path = self.create_test_file('test.xz', compression='xz')
-        result = parse_input_file(str(path))
+        result = file_to_list(str(path))
         self.assertEqual(result, self.expected_result)
 
     def test_custom_delimiter(self):
         """Test parsing with custom delimiter"""
         content = "test1@example.com,test2@example.com,test3@example.com"
         path = self.create_test_file('test_delimiter.txt', content=content)
-        result = parse_input_file(str(path), delimiter=',')
+        result = file_to_list(str(path), delimiter=',')
         self.assertEqual(result, self.expected_result)
 
     def test_nonexistent_file(self):
         """Test handling of nonexistent file"""
         path = Path(self.temp_dir) / 'nonexistent.txt'
-        result = parse_input_file(str(path))
+        result = file_to_list(str(path))
         self.assertIsNone(result)
 
     def test_empty_file(self):
         """Test handling of empty file"""
         path = self.create_test_file('empty.txt', content="")
-        result = parse_input_file(str(path))
+        result = file_to_list(str(path))
         self.assertEqual(result, [])
 
     def test_invalid_input_type(self):
         """Test handling of invalid input type"""
-        result = parse_input_file(123)  # Not a string
+        result = file_to_list(123)  # Not a string
         self.assertIsNone(result)
 
     def test_unsupported_compression(self):
         """Test handling of unsupported compression type"""
         path = self.create_test_file('test.rar')
-        result = parse_input_file(str(path))
+        result = file_to_list(str(path))
         self.assertEqual(result, self.expected_result)  # Should handle as regular text file
 
     def test_corrupted_bz2_file(self):
         """Test handling of corrupted bz2 file"""
         path = self.create_test_file('corrupt.bz2', content="This is not a valid bz2 file")
-        result = parse_input_file(str(path))
+        result = file_to_list(str(path))
         self.assertIsNone(result)
 
     def test_corrupted_gzip_file(self):
         """Test handling of corrupted gzip file"""
         path = self.create_test_file('corrupt.gz', content="This is not a valid gzip file")
-        result = parse_input_file(str(path))
+        result = file_to_list(str(path))
         self.assertIsNone(result)
 
     def test_corrupted_lzma_file(self):
         """Test handling of corrupted lzma/xz file"""
         path = self.create_test_file('corrupt.xz', content="This is not a valid lzma file")
-        result = parse_input_file(str(path))
+        result = file_to_list(str(path))
         self.assertIsNone(result)
 
     def test_parse_zip_single_text_file(self):
@@ -126,7 +127,7 @@ class TestInputFile(unittest.TestCase):
             zip_file.writestr('emails.txt', self.test_content)
         self.addCleanup(os.remove, zip_path)
 
-        result = parse_input_file(str(zip_path))
+        result = file_to_list(str(zip_path))
         self.assertEqual(result, self.expected_result)
 
     def test_parse_zip_multiple_text_files(self):
@@ -147,7 +148,7 @@ class TestInputFile(unittest.TestCase):
             zip_file.writestr('third.csv', content3)
         self.addCleanup(os.remove, zip_path)
 
-        result = parse_input_file(str(zip_path))
+        result = file_to_list(str(zip_path))
         self.assertEqual(result, expected)
 
     def test_parse_zip_with_nested_directories(self):
@@ -162,7 +163,7 @@ class TestInputFile(unittest.TestCase):
             zip_file.writestr('dir2/other.txt', content2)
         self.addCleanup(os.remove, zip_path)
 
-        result = parse_input_file(str(zip_path))
+        result = file_to_list(str(zip_path))
         self.assertEqual(result, expected)
 
     def test_parse_zip_with_non_text_files(self):
@@ -179,7 +180,7 @@ class TestInputFile(unittest.TestCase):
             zip_file.writestr('document.pdf', b'pdf data')
         self.addCleanup(os.remove, zip_path)
 
-        result = parse_input_file(str(zip_path))
+        result = file_to_list(str(zip_path))
         self.assertEqual(result, expected)
 
     def test_parse_zip_different_text_extensions(self):
@@ -196,7 +197,7 @@ class TestInputFile(unittest.TestCase):
             zip_file.writestr('data.txt', content3)
         self.addCleanup(os.remove, zip_path)
 
-        result = parse_input_file(str(zip_path))
+        result = file_to_list(str(zip_path))
         self.assertEqual(set(result), set(expected))  # Order might vary
 
     def test_parse_zip_empty_text_files(self):
@@ -211,13 +212,13 @@ class TestInputFile(unittest.TestCase):
             zip_file.writestr('empty2.txt', '')
         self.addCleanup(os.remove, zip_path)
 
-        result = parse_input_file(str(zip_path))
+        result = file_to_list(str(zip_path))
         self.assertEqual(result, expected)
 
     def test_corrupted_zip_file_invalid_content(self):
         """Test handling of corrupted zip file with invalid content"""
         path = self.create_test_file('corrupt.zip', content="This is not a valid zip file")
-        result = parse_input_file(str(path))
+        result = file_to_list(str(path))
         self.assertIsNone(result)
 
     def test_corrupted_zip_file_truncated(self):
@@ -234,7 +235,7 @@ class TestInputFile(unittest.TestCase):
             f.write(data)
 
         self.addCleanup(os.remove, zip_path)
-        result = parse_input_file(str(zip_path))
+        result = file_to_list(str(zip_path))
         self.assertIsNone(result)
 
     def test_corrupted_zip_file_with_corrupted_member(self):
@@ -247,7 +248,7 @@ class TestInputFile(unittest.TestCase):
             zip_file.writestr('corrupt.txt', b'\x80\x81\x82\x83')  # Invalid UTF-8
 
         self.addCleanup(os.remove, zip_path)
-        result = parse_input_file(str(zip_path))
+        result = file_to_list(str(zip_path))
         # Should still get content from valid file
         self.assertEqual(result, ["valid@example.com"])
 
@@ -258,7 +259,7 @@ class TestInputFile(unittest.TestCase):
             f.write(b'')  # Create empty file
 
         self.addCleanup(os.remove, zip_path)
-        result = parse_input_file(str(zip_path))
+        result = file_to_list(str(zip_path))
         self.assertIsNone(result)
 
     def test_corrupted_zip_file_partial_header(self):
@@ -268,7 +269,7 @@ class TestInputFile(unittest.TestCase):
             f.write(b'PK\x03\x04')  # Just the ZIP magic number
 
         self.addCleanup(os.remove, zip_path)
-        result = parse_input_file(str(zip_path))
+        result = file_to_list(str(zip_path))
         self.assertIsNone(result)
 
 if __name__ == '__main__':

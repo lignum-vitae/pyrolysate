@@ -100,15 +100,15 @@ The CLI command `pyro` will be available after installation. If the command isn'
 
 ### Input File Parsing
 ```python
-from pyrolysate import parse_input_file
+from pyrolysate import file_to_list
 ```
 #### Parse file with default newline delimiter
 ```python
-urls = parse_input_file("urls.txt")
+urls = file_to_list("urls.txt")
 ```
 #### Parse file with custom delimiter
 ```python
-emails = parse_input_file("emails.csv", delimiter=",")
+emails = file_to_list("emails.csv", delimiter=",")
 ```
 ### Supported Outputs
 - JSON (prettified or minified)
@@ -275,7 +275,7 @@ pyro -u -i archive.zip
 
 | Method                                              | Parameters                               | Description                                     |
 |------------------                                   |----------------------                    |-------------------------                        |
-| `parse_input_file(input_file_name, delimiter='\n')` | `input_file_name: str`, `delimiter: str` | Parses input file into python list by delimiter |
+| `file_to_list(input_file_name, delimiter='\n')` | `input_file_name: str`, `delimiter: str` | Parses input file into python list by delimiter |
 
 ## CLI Reference
 
