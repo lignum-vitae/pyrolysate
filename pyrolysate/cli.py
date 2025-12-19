@@ -3,27 +3,66 @@ from pathlib import Path
 from pyrolysate import url, email, file_to_list
 from pyrolysate.update_tlds import update
 
+
 def main():
-    parser = argparse.ArgumentParser(prog= 'pyrolysate', usage ='%(prog)s [options]')
-    parser.add_argument('target', type = str, nargs = '*', default = None, help = 'An email or URL string, or a list of email or URL strings.')
+    parser = argparse.ArgumentParser(prog="pyrolysate", usage="%(prog)s [options]")
+    parser.add_argument(
+        "target",
+        type=str,
+        nargs="*",
+        default=None,
+        help="An email or URL string, or a list of email or URL strings.",
+    )
 
     # Actions that shouldn't be run simultaneously (mutually exclusive)
     action_group = parser.add_mutually_exclusive_group()
-    action_group.add_argument('-u', '--url', action = 'store_true', help = 'Specify URL input.')
-    action_group.add_argument('-e', '--email', action = 'store_true',  help = 'Specify Email input.')
-    action_group.add_argument('--update', action='store_true', help='Fetch the latest TLD list from IANA and update the local cache.')
+    action_group.add_argument(
+        "-u", "--url", action="store_true", help="Specify URL input."
+    )
+    action_group.add_argument(
+        "-e", "--email", action="store_true", help="Specify Email input."
+    )
+    action_group.add_argument(
+        "--update",
+        action="store_true",
+        help="Fetch the latest TLD list from IANA and update the local cache.",
+    )
 
     # Functional Groups for Output Formatting
-    output_group = parser.add_argument_group('Output Customization')
-    output_group.add_argument('-c', '--csv', action='store_true', help='Output in CSV format')
-    output_group.add_argument('-j', '--json', action='store_true', help='Output in JSON format')
-    output_group.add_argument('-np', '--no-prettify', action='store_true', help='Minify JSON output')
-    
-    file_group = parser.add_argument_group('File Handling')
-    file_group.add_argument('-i', '--input_file', type = str, default = None, help = 'Input file name with extension.')
-    file_group.add_argument('-o', '--output_file', type = str, default = None, help = 'Output file name without extension.')
-    file_group.add_argument('-d', '--delimiter', type = str, default = '\n', help = 'The delimiter to use. Only valid when --input is provided.')
-    
+    output_group = parser.add_argument_group("Output Customization")
+    output_group.add_argument(
+        "-c", "--csv", action="store_true", help="Output in CSV format"
+    )
+    output_group.add_argument(
+        "-j", "--json", action="store_true", help="Output in JSON format"
+    )
+    output_group.add_argument(
+        "-np", "--no-prettify", action="store_true", help="Minify JSON output"
+    )
+
+    file_group = parser.add_argument_group("File Handling")
+    file_group.add_argument(
+        "-i",
+        "--input_file",
+        type=str,
+        default=None,
+        help="Input file name with extension.",
+    )
+    file_group.add_argument(
+        "-o",
+        "--output_file",
+        type=str,
+        default=None,
+        help="Output file name without extension.",
+    )
+    file_group.add_argument(
+        "-d",
+        "--delimiter",
+        type=str,
+        default="\n",
+        help="The delimiter to use. Only valid when --input is provided.",
+    )
+
     args = parser.parse_args()
 
     if args.update:
@@ -70,24 +109,43 @@ def main():
 
         # Process and save output
         if args.json:
-            handler.to_json_file(args.output_file, data) if args.no_prettify is False else handler.to_json_file(args.output_file, data, prettify=False)
+            (
+                handler.to_json_file(args.output_file, data)
+                if args.no_prettify is False
+                else handler.to_json_file(args.output_file, data, prettify=False)
+            )
         elif args.csv:
             handler.to_csv_file(args.output_file, data)
         else:
             # Default to txt file
-            with open(f"{args.output_file}.txt", 'w') as file:
-                file.write(str(handler.parse_url_array(data) if args.url else handler.parse_email_array(data)))
+            with open(f"{args.output_file}.txt", "w") as file:
+                file.write(
+                    str(
+                        handler.parse_url_array(data)
+                        if args.url
+                        else handler.parse_email_array(data)
+                    )
+                )
         print(f"Output written to {output_path}")
 
     # Output to console
     elif args.output_file is None:
         if args.json:
-            output = handler.to_json(data) if args.no_prettify is False else handler.to_json(args.output_file, data, prettify=False)
+            output = (
+                handler.to_json(data)
+                if args.no_prettify is False
+                else handler.to_json(args.output_file, data, prettify=False)
+            )
         elif args.csv:
             output = handler.to_csv(data)
         else:
-            output = handler.parse_url_array(data) if args.url else handler.parse_email_array(data)
+            output = (
+                handler.parse_url_array(data)
+                if args.url
+                else handler.parse_email_array(data)
+            )
         print(output)
+
 
 if __name__ == "__main__":
     main()

@@ -7,6 +7,7 @@ from datetime import datetime
 # HTTP requests (third-party)
 import requests
 
+
 @cache
 def get_tld(path_to_tlds_file: str = "tld.txt") -> tuple[str, list[str]]:
     """Grabs top level domains from internet assigned numbers authority
@@ -20,13 +21,13 @@ def get_tld(path_to_tlds_file: str = "tld.txt") -> tuple[str, list[str]]:
     if iana_result is not None:
         return iana_result
     # Try local file next
-    print(f"Retrieving locally stored TLDs from {path_to_tlds_file}")
     local_result = get_from_local()
     if local_result is not None:
         return local_result
     # Return None if other methods fail
     print("Failed to get both iana tlds and locally stored tlds.")
     return None
+
 
 def get_from_iana() -> tuple[str, list[str]] | None:
     try:
@@ -39,6 +40,7 @@ def get_from_iana() -> tuple[str, list[str]] | None:
     except requests.RequestException as e:
         print(f"Error fetching TLD list: {e}")
         return None
+
 
 def get_from_local() -> tuple[str, list[str]] | None:
     try:
@@ -53,6 +55,7 @@ def get_from_local() -> tuple[str, list[str]] | None:
         print(f"Error reading local TLD file: {e}")
         return None
 
+
 def update_local_tld_file(file_name: str = "tld") -> tuple[str, int]:
     if not isinstance(file_name, str):
         return "Failed to write file. File name must be a string.", 1
@@ -61,7 +64,7 @@ def update_local_tld_file(file_name: str = "tld") -> tuple[str, int]:
         return "Failed to fetch tlds", 1
     ver_dated, tldss = tlds
     version, dated = ver_dated.split(",")
-    
+
     if not file_name.endswith(".txt"):
         file_name = f"{file_name}.txt"
     with open(file_name, "w") as file:
@@ -72,8 +75,10 @@ def update_local_tld_file(file_name: str = "tld") -> tuple[str, int]:
             file.write(f"{tld}\n")
     return "File created successfully", 0
 
+
 def update(file_name: str = "tld"):
     return update_local_tld_file(file_name)
+
 
 if __name__ == "__main__":
     update()

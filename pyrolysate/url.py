@@ -6,6 +6,7 @@ from typing import Generator
 
 # internal dependencies
 from pyrolysate.common import Shared
+from pyrolysate.update_tlds import get_tld
 from pyrolysate.converter_async import async_support
 
 
@@ -62,7 +63,7 @@ class Url:
 
         url_dict = {url_string: self.empty_dict.copy()}
         if tlds is None:
-            _, tlds = self.get_tld()
+            _, tlds = get_tld()
         scheme = url_string.split("://")[0]
         if "://" in url_string and scheme not in self.schemes_and_ports.keys():
             return None
@@ -124,9 +125,9 @@ class Url:
                 if tld_and_dir[0] in tlds and temp[1] in self.two_part_tlds_lhs:
                     # example.gov.bs/directory.xhtml
                     url_dict[url_string]["second_level_domain"] = temp[0]
-                    url_dict[url_string]["top_level_domain"] = (
-                        f"{temp[1]}.{tld_and_dir[0]}"
-                    )
+                    url_dict[url_string][
+                        "top_level_domain"
+                    ] = f"{temp[1]}.{tld_and_dir[0]}"
                 elif tld_and_dir[0] in tlds:
                     # www.example.org/directory.xhtml
                     url_dict[url_string]["subdomain"] = temp[0]
@@ -217,7 +218,7 @@ class Url:
         if not urls or all(item == "" for item in urls) or not isinstance(urls, list):
             return None
         if tlds is None:
-            _, tlds = self.get_tld()
+            _, tlds = get_tld()
         for url in urls:
             yield self.parse_url(url, tlds)
 
