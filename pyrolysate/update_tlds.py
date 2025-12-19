@@ -21,7 +21,7 @@ def get_tld(path_to_tlds_file: str = "tld.txt") -> tuple[str, list[str]]:
     if iana_result is not None:
         return iana_result
     # Try local file next
-    local_result = get_from_local()
+    local_result = get_from_local(path_to_tlds_file)
     if local_result is not None:
         return local_result
     # Return None if other methods fail
@@ -42,7 +42,7 @@ def get_from_iana() -> tuple[str, list[str]] | None:
         return None
 
 
-def get_from_local() -> tuple[str, list[str]] | None:
+def get_from_local(path_to_tlds_file: str) -> tuple[str, list[str]] | None:
     try:
         with open(path_to_tlds_file, "r") as file:
             lines = file.readlines()

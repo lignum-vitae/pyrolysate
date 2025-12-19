@@ -51,12 +51,12 @@ class Email:
         :rtype: dict[str, dict[str, str]] | None
         """
         results = self._parse_email_array(emails)
-        if results == None:
+        if results is None:
             return None
 
         email_array = {}
         for result in results:
-            if result == None:
+            if result is None:
                 continue
             email_array.update(result)
 

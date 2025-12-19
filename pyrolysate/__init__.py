@@ -2,7 +2,7 @@
 from pyrolysate.email import Email
 from pyrolysate.url import Url
 
-# Instance imports
+# Class instance imports
 from pyrolysate.email import email
 from pyrolysate.url import url
 

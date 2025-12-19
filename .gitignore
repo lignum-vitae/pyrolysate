@@ -1,11 +1,12 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-.venv/
 
-# generated JSON and CSV files
+# generated files
 *.json
 *.csv
+.pytest_cache/
+.venv/
 
 # test input files
 test*.txt

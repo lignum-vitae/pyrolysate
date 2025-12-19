@@ -213,7 +213,7 @@ class TestInputFile(unittest.TestCase):
         self.addCleanup(os.remove, zip_path)
 
         result = file_to_list(str(zip_path))
-        self.assertEqual(set(result), set(expected))  # Order might vary
+        self.assertEqual(set(result), set(expected))
 
     def test_parse_zip_empty_text_files(self):
         """Test parsing zip file with empty text files"""

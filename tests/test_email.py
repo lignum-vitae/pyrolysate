@@ -35,14 +35,14 @@ class TestEmail(unittest.TestCase):
 
     def test_parse_email_with_plus(self):
         """Test parsing of email addresses with plus addressing"""
-        result = email.parse_email("user+tag@gmail.com")
+        result = email.parse_email("user+tag@hotmail.com")
         self.assertEqual(
             result,
             {
-                "user+tag@gmail.com": {
+                "user+tag@hotmail.com": {
                     "username": "user",
                     "plus_address": "tag",
-                    "mail_server": "gmail",
+                    "mail_server": "hotmail",
                     "domain": "com",
                 }
             },

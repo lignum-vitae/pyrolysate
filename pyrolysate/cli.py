@@ -46,21 +46,21 @@ def main():
         "--input_file",
         type=str,
         default=None,
-        help="Input file name with extension.",
+        help="Input file name with extension",
     )
     file_group.add_argument(
         "-o",
         "--output_file",
         type=str,
         default=None,
-        help="Output file name without extension.",
+        help="Output file name without extension",
     )
     file_group.add_argument(
         "-d",
         "--delimiter",
         type=str,
         default="\n",
-        help="The delimiter to use. Only valid when --input is provided.",
+        help="The delimiter to use. Only valid when --input is provided",
     )
 
     args = parser.parse_args()

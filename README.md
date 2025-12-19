@@ -375,7 +375,7 @@ pyro -u -i archive.zip
 ### URL Formats
 - Basic: `example.com`
 - With subdomain: `www.example.com`
-- With scheme: `https://example.com`
+- With scheme: `https://example.org`
 - With path: `example.com/path/to/file.txt`
 - With port: `example.com:8080`
 - With query: `example.com/search?q=test`

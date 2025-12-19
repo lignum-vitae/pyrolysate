@@ -19,7 +19,7 @@ version = "0.14.0"
 authors = [
 	{ name ="Andrew Hennis", email="andrew.mr.hennis@gmail.com" },
 ]
-description = "Parser made to convert lists of emails and urls into JSON and CSV formatted files"
+description = "Parser made to convert lists of emails and urls into JSON formatted, CSV formatted, or plain text files"
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [

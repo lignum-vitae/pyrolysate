@@ -16,20 +16,7 @@ from io import StringIO
 
 
 def main():
-    print(email.parse_email("user+facebook@gmail.com"))
-    print(email.to_csv("user+facebook@gmail.com"))
-    print(
-        email.to_csv(
-            [
-                "user+facebook@gmail.com",
-                "football@hotmail.com",
-                "happy+yoohoo@messenger.org",
-            ]
-        )
-    )
-
-    print(url.to_csv("www.youtube.com"))
-    print(url.to_csv("www.youtube.com/directory.xhtml"))
+    pass
 
 
 class _ZIP:
@@ -146,13 +133,13 @@ def file_to_list(input_file_name: str, delimiter: str = "\n") -> list[str] | Non
     except OSError as err:
         print("OS error:", err)
         return None
-    except IOError as err:
+    except IOError:
         print("An error occured while attempting to read the file.")
         return None
-    except PermissionError as err:
+    except PermissionError:
         print("You do not have permission to open file.")
         return None
-    except FileNotFoundError as err:
+    except FileNotFoundError:
         print("Unable to locate file.")
         return None
 

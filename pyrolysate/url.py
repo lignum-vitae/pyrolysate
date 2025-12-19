@@ -1,6 +1,3 @@
-# HTTP requests (third-party)
-import requests
-
 # Typing, type hints, and errors
 from typing import Generator
 
@@ -193,12 +190,12 @@ class Url:
         if not urls or all(item == "" for item in urls) or not isinstance(urls, list):
             return None
         results = self._parse_url_array(urls, tlds)
-        if results == None:
+        if results is None:
             return None
 
         url_array = {}
         for result in results:
-            if result == None:
+            if result is None:
                 continue
             url_array.update(result)
 

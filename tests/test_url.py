@@ -25,15 +25,15 @@ class TestUrl(unittest.TestCase):
 
     def test_parse_url_with_www(self):
         """Test parsing URL with www subdomain"""
-        result = url.parse_url("www.example.com")
+        result = url.parse_url("www.example.org")
         self.assertEqual(
             result,
             {
-                "www.example.com": {
+                "www.example.org": {
                     "scheme": "",
                     "subdomain": "www",
                     "second_level_domain": "example",
-                    "top_level_domain": "com",
+                    "top_level_domain": "org",
                     "port": "",
                     "path": "",
                     "query": "",
