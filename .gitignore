@@ -2,9 +2,11 @@
 __pycache__/
 *.py[cod]
 
-# generated JSON and CSV files
+# generated files
 *.json
 *.csv
+.pytest_cache/
+.venv/
 
 # test input files
 test*.txt

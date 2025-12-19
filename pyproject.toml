@@ -2,12 +2,6 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.hatch.envs.default]
-path = ".venv"
-dependencies = [
-    "requests"
-]
-
 [tool.hatch.envs.default.scripts]
 pyro = "python -m pyrolysate.cli {args}"
 dev = [
@@ -21,11 +15,11 @@ pyro = "pyrolysate.cli:main"
 
 [project]
 name = "pyrolysate"
-version = "0.13.0"
+version = "0.14.0"
 authors = [
 	{ name ="Andrew Hennis", email="andrew.mr.hennis@gmail.com" },
 ]
-description = "Parser made to convert lists of emails and urls into JSON and CSV formatted files"
+description = "Parser made to convert lists of emails and urls into JSON formatted, CSV formatted, or plain text files"
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
@@ -34,9 +28,15 @@ classifiers = [
 	"Operating System :: OS Independent",
 ]
 dependencies = [
-    "requests"
+    "requests",
 ]
 
 [project.urls]
 Homepage = "https://github.com/dawnandrew100/pyrolysate"
 Issues = "https://github.com/dawnandrew100/pyrolysate/issues"
+
+[dependency-groups]
+dev = [
+    "black>=25.12.0",
+    "pytest>=9.0.2",
+]

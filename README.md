@@ -55,6 +55,126 @@ and provides flexible input/output options including file processing with custom
   - Modular design for easy integration
   - Command-line interface for quick testing
 
+## API Reference
+
+### Email Class
+
+| Method                                           | Parameters                                              | Description                    |
+|---------------------                             |---------------------                                    |-----------------               |
+| `parse_email(email_str)`                         | `email_str: str`                                        | Parses single email address    |
+| `parse_email_array(emails)`                      | `emails: list[str]`                                     | Parses list of email addresses |
+| `to_json(emails, prettify=True)`                 | `emails: str\|list[str]`, `prettify: bool`              | Converts to JSON format        |
+| `to_json_file(file_name, emails, prettify=True)` | `file_name: str`, `emails: list[str]`, `prettify: bool` | Converts and saves JSON to file|
+| `to_csv(emails)`                                 | `emails: str\|list[str]`                                | Converts to CSV format         |
+| `to_csv_file(file_name, emails)`                 | `file_name: str`, `emails: list[str]`                   | Converts and saves CSV to file |
+
+### URL Class
+
+| Method                                         | Parameters                                            | Description                                               |
+|------------------                              |----------------------                                 |-------------------                                        |
+| `parse_url(url_str, tlds=[])`                  | `url_str: str`, `tlds: list[str]`                     | Parses single URL                                         |
+| `parse_url_array(urls, tlds=[])`               | `urls: list[str]`, `tlds: list[str]`                  | Parses list of URLs                                       |
+| `to_json(urls, prettify=True)`                 | `urls: str\|list[str]`, `prettify: bool`              | Converts to JSON format                                   |
+| `to_json_file(file_name, urls, prettify=True)` | `file_name: str`, `urls: list[str]`, `prettify: bool` | Converts and saves JSON to file                           |
+| `to_csv(urls)`                                 | `urls: str\|list[str]`                                | Converts to CSV format                                    |
+| `to_csv_file(file_name, urls)`                 | `file_name: str`, `urls: list[str]`                   | Converts and saves CSV to file                            |
+| `get_tld(path_to_tlds_file='tld.txt')`         | `path_to_tlds_file: str = 'tld.txt'`                  | Fetches current TLD list from IANA                        |
+| `local_tld_file(file_name)`                    | `file_name: str`                                      | Fetches and stores `get_tld()` output as a local txt file |
+
+### Miscellaneous
+
+| Method                                          | Parameters                               | Description                                     |
+|------------------                               |----------------------                    |-------------------------                        |
+| `file_to_list(input_file_name, delimiter='\n')` | `input_file_name: str`, `delimiter: str` | Parses input file into python list by delimiter |
+
+## CLI Reference
+
+| Argument               | Type   | Value when argument is omitted| Description                        |
+|------------------------|--------|--------------------           |------------------------------------|
+| `target`               | `str`  | `None`                        | Email or URL string(s) to process  |
+| `-u`, `--url`          | `flag` | `False`                       | Specify URL input                  |
+| `-e`, `--email`        | `flag` | `False`                       | Specify Email input                |
+| `-i`, `--input_file`   | `str`  | `None`                        | Input file name with extension     |
+| `-o`, `--output_file`  | `str`  | `None`                        | Output file name without extension |
+| `-c`, `--csv`          | `flag` | `False`                       | Save output as CSV format          |
+| `-j`, `--json`         | `flag` | `False`                       | Save output as JSON format         |
+| `-np`, `--no_prettify` | `flag` | `False`                       | Turn off prettified JSON output    |
+| `-d`, `--delimiter`    | `str`  | `'\n'`                        | Delimiter for input file parsing   |
+
+### Input File Support
+| Format | Extension  | Description                    |
+|--------|------------|--------------------------------|
+| Text   | .txt       | Plain text files               |
+| Log    | .log       | Plain text log files           |
+| CSV    | .csv       | Comma-separated values         |
+| ZIP    | .zip       | Archives containing text files |
+| GZIP   | .gz        | GZIP compressed files          |
+| BZIP2  | .bz2       | BZIP2 compressed files         |
+| LZMA   | .xz, .lzma | LZMA compressed files          |
+
+## Output Types
+
+### Email Parse Output
+
+| Field        | Description                   | Example            |
+|--------------|-------------------------------|--------------------|
+| input        | Full email                    | user+tag@gmail.com |
+| username     | Part before + or @ symbol     | user               |
+| plus_address | Optional part between + and @ | tag                |
+| mail_server  | Domain before TLD             | gmail              |
+| domain       | Top-level domain              | com                |
+
+Example output:
+```json
+{"user+tag@gmail.com": 
+    {
+    "username": "user",
+    "plus_address": "tag",
+    "mail_server": "gmail",
+    "domain": "com"
+    }
+}
+```
+
+```csv
+email,username,plus_address,mail_server,domain
+user+tag@gmail.com,user,tag,gmail,com
+```
+
+### URL Parse Output
+
+| Field               | Description      | Example   |
+|--------------       |---------------   |---------  |
+| scheme              | Protocol         | https     |
+| subdomain           | Domain prefix    | www       |
+| second_level_domain | Main domain      | example   |
+| top_level_domain    | Domain suffix    | com       |
+| port                | Port number      | 443       |
+| path                | URL path         | blog/post |
+| query               | Query parameters | q=test    |
+| fragment            | URL fragment     | section1  |
+
+Example output:
+```json
+{"https://www.example.com:443/blog/post?q=test#section1": 
+    {
+    "scheme": "https",
+    "subdomain": "www",
+    "second_level_domain": "example",
+    "top_level_domain": "com",
+    "port": "443",
+    "path": "blog/post",
+    "query": "q=test",
+    "fragment": "section1"
+    }
+}
+```
+
+```csv
+url,scheme,subdomain,second_level_domain,top_level_domain,port,path,query,fragment
+https://www.example.com:443/blog/post?q=test#section1,https,www,example,com,443,blog/post,q=test,section1
+```
+
 ## 🚀 Installation
 ### From PyPI
 ```bash
@@ -100,15 +220,15 @@ The CLI command `pyro` will be available after installation. If the command isn'
 
 ### Input File Parsing
 ```python
-from pyrolysate import parse_input_file
+from pyrolysate import file_to_list
 ```
 #### Parse file with default newline delimiter
 ```python
-urls = parse_input_file("urls.txt")
+urls = file_to_list("urls.txt")
 ```
 #### Parse file with custom delimiter
 ```python
-emails = parse_input_file("emails.csv", delimiter=",")
+emails = file_to_list("emails.csv", delimiter=",")
 ```
 ### Supported Outputs
 - JSON (prettified or minified)
@@ -245,126 +365,6 @@ pyro -e -i emails.txt.bz2
 pyro -u -i archive.zip
 ```
 
-## API Reference
-
-### Email Class
-
-| Method                                           | Parameters                                              | Description                    |
-|---------------------                             |---------------------                                    |-----------------               |
-| `parse_email(email_str)`                         | `email_str: str`                                        | Parses single email address    |
-| `parse_email_array(emails)`                      | `emails: list[str]`                                     | Parses list of email addresses |
-| `to_json(emails, prettify=True)`                 | `emails: str\|list[str]`, `prettify: bool`              | Converts to JSON format        |
-| `to_json_file(file_name, emails, prettify=True)` | `file_name: str`, `emails: list[str]`, `prettify: bool` | Converts and saves JSON to file|
-| `to_csv(emails)`                                 | `emails: str\|list[str]`                                | Converts to CSV format         |
-| `to_csv_file(file_name, emails)`                 | `file_name: str`, `emails: list[str]`                   | Converts and saves CSV to file |
-
-### URL Class
-
-| Method                                         | Parameters                                            | Description                                               |
-|------------------                              |----------------------                                 |-------------------                                        |
-| `parse_url(url_str, tlds=[])`                  | `url_str: str`, `tlds: list[str]`                     | Parses single URL                                         |
-| `parse_url_array(urls, tlds=[])`               | `urls: list[str]`, `tlds: list[str]`                  | Parses list of URLs                                       |
-| `to_json(urls, prettify=True)`                 | `urls: str\|list[str]`, `prettify: bool`              | Converts to JSON format                                   |
-| `to_json_file(file_name, urls, prettify=True)` | `file_name: str`, `urls: list[str]`, `prettify: bool` | Converts and saves JSON to file                           |
-| `to_csv(urls)`                                 | `urls: str\|list[str]`                                | Converts to CSV format                                    |
-| `to_csv_file(file_name, urls)`                 | `file_name: str`, `urls: list[str]`                   | Converts and saves CSV to file                            |
-| `get_tld(path_to_tlds_file='tld.txt')`         | `path_to_tlds_file: str = 'tld.txt'`                  | Fetches current TLD list from IANA                        |
-| `local_tld_file(file_name)`                    | `file_name: str`                                      | Fetches and stores `get_tld()` output as a local txt file |
-
-### Miscellaneous
-
-| Method                                              | Parameters                               | Description                                     |
-|------------------                                   |----------------------                    |-------------------------                        |
-| `parse_input_file(input_file_name, delimiter='\n')` | `input_file_name: str`, `delimiter: str` | Parses input file into python list by delimiter |
-
-## CLI Reference
-
-| Argument               | Type   | Value when argument is omitted| Description                        |
-|------------------------|--------|--------------------           |------------------------------------|
-| `target`               | `str`  | `None`                        | Email or URL string(s) to process  |
-| `-u`, `--url`          | `flag` | `False`                       | Specify URL input                  |
-| `-e`, `--email`        | `flag` | `False`                       | Specify Email input                |
-| `-i`, `--input_file`   | `str`  | `None`                        | Input file name with extension     |
-| `-o`, `--output_file`  | `str`  | `None`                        | Output file name without extension |
-| `-c`, `--csv`          | `flag` | `False`                       | Save output as CSV format          |
-| `-j`, `--json`         | `flag` | `False`                       | Save output as JSON format         |
-| `-np`, `--no_prettify` | `flag` | `True`                        | Turn off prettified JSON output    |
-| `-d`, `--delimiter`    | `str`  | `'\n'`                        | Delimiter for input file parsing   |
-
-### Input File Support
-| Format | Extension  | Description                    |
-|--------|------------|--------------------------------|
-| Text   | .txt       | Plain text files               |
-| Log    | .log       | Plain text log files           |
-| CSV    | .csv       | Comma-separated values         |
-| ZIP    | .zip       | Archives containing text files |
-| GZIP   | .gz        | GZIP compressed files          |
-| BZIP2  | .bz2       | BZIP2 compressed files         |
-| LZMA   | .xz, .lzma | LZMA compressed files          |
-
-## Output Formats
-
-### Email Parse Output
-
-| Field        | Description                   | Example            |
-|--------------|-------------------------------|--------------------|
-| input        | Full email                    | user+tag@gmail.com |
-| username     | Part before + or @ symbol     | user               |
-| plus_address | Optional part between + and @ | tag                |
-| mail_server  | Domain before TLD             | gmail              |
-| domain       | Top-level domain              | com                |
-
-Example output:
-```json
-{"user+tag@gmail.com": 
-    {
-    "username": "user",
-    "plus_address": "tag",
-    "mail_server": "gmail",
-    "domain": "com"
-    }
-}
-```
-
-```csv
-email,username,plus_address,mail_server,domain
-user+tag@gmail.com,user,tag,gmail,com
-```
-
-### URL Parse Output
-
-| Field               | Description      | Example   |
-|--------------       |---------------   |---------  |
-| scheme              | Protocol         | https     |
-| subdomain           | Domain prefix    | www       |
-| second_level_domain | Main domain      | example   |
-| top_level_domain    | Domain suffix    | com       |
-| port                | Port number      | 443       |
-| path                | URL path         | blog/post |
-| query               | Query parameters | q=test    |
-| fragment            | URL fragment     | section1  |
-
-Example output:
-```json
-{"https://www.example.com:443/blog/post?q=test#section1": 
-    {
-    "scheme": "https",
-    "subdomain": "www",
-    "second_level_domain": "example",
-    "top_level_domain": "com",
-    "port": "443",
-    "path": "blog/post",
-    "query": "q=test",
-    "fragment": "section1"
-    }
-}
-```
-
-```csv
-url,scheme,subdomain,second_level_domain,top_level_domain,port,path,query,fragment
-https://www.example.com:443/blog/post?q=test#section1,https,www,example,com,443,blog/post,q=test,section1
-```
-
 ## Supported Formats
 
 ### Email Formats
@@ -375,7 +375,7 @@ https://www.example.com:443/blog/post?q=test#section1,https,www,example,com,443,
 ### URL Formats
 - Basic: `example.com`
 - With subdomain: `www.example.com`
-- With scheme: `https://example.com`
+- With scheme: `https://example.org`
 - With path: `example.com/path/to/file.txt`
 - With port: `example.com:8080`
 - With query: `example.com/search?q=test`
