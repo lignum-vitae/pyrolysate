@@ -9,7 +9,7 @@ from pyrolysate.converter_async import async_support
 class Email:
     def __init__(self):
         self.shared = Shared()
-        self.header = ["email", "username", "plus_address", "mail_server", "domain"]
+        self.header = ["email", "local", "plus_address", "mail_server", "domain"]
         self.empty_dict = {field: "" for field in self.header[1:]}
         self.field_generator = lambda entry, details: [entry] + [
             details[field] for field in self.header[1:]
@@ -23,18 +23,28 @@ class Email:
         :return: Dictionary containing email parsed into sub-parts
         :rtype: dict[str, dict[str, str]] | None
         """
-        if not isinstance(e_mail_string, str) or len(e_mail_string) == 0:
+        if (
+            not isinstance(e_mail_string, str)
+            or len(e_mail_string) == 0
+            or len(e_mail_string) >= 998
+        ):
             return None
         email_dict = {e_mail_string: self.empty_dict.copy()}
         temp = e_mail_string.split("@")
-        if len(temp) != 2:
+        if len(temp) != 2 or any(
+            [
+                part == "" or part.startswith((".", " ")) or part.endswith((".", " "))
+                for part in temp
+            ]
+        ):
             return None  # returns none for invalid emails without @ or multiple @
+
         plus_address = temp[0].split("+")
         if len(plus_address) == 2:
-            email_dict[e_mail_string]["username"] = plus_address[0]
+            email_dict[e_mail_string]["local"] = plus_address[0]
             email_dict[e_mail_string]["plus_address"] = plus_address[1]
         else:
-            email_dict[e_mail_string]["username"] = temp[0]
+            email_dict[e_mail_string]["local"] = temp[0]
         server_and_domain = temp[1].split(".")
         if len(server_and_domain) > 3:
             return None  # invalid email with too many periods

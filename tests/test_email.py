@@ -10,7 +10,7 @@ class TestEmail(unittest.TestCase):
             result,
             {
                 "example@gmail.com": {
-                    "username": "example",
+                    "local": "example",
                     "plus_address": "",
                     "mail_server": "gmail",
                     "domain": "com",
@@ -25,7 +25,7 @@ class TestEmail(unittest.TestCase):
             result,
             {
                 "user@agency.gov.bs": {
-                    "username": "user",
+                    "local": "user",
                     "plus_address": "",
                     "mail_server": "agency",
                     "domain": "gov.bs",
@@ -40,7 +40,7 @@ class TestEmail(unittest.TestCase):
             result,
             {
                 "user+tag@hotmail.com": {
-                    "username": "user",
+                    "local": "user",
                     "plus_address": "tag",
                     "mail_server": "hotmail",
                     "domain": "com",
@@ -56,13 +56,13 @@ class TestEmail(unittest.TestCase):
             result,
             {
                 "test1+spam@example.com": {
-                    "username": "test1",
+                    "local": "test1",
                     "plus_address": "spam",
                     "mail_server": "example",
                     "domain": "com",
                 },
                 "test2+shopping@domain.org": {
-                    "username": "test2",
+                    "local": "test2",
                     "plus_address": "shopping",
                     "mail_server": "domain",
                     "domain": "org",
@@ -78,19 +78,64 @@ class TestEmail(unittest.TestCase):
             result,
             {
                 "regular@example.com": {
-                    "username": "regular",
+                    "local": "regular",
                     "plus_address": "",
                     "mail_server": "example",
                     "domain": "com",
                 },
                 "user+tag@domain.org": {
-                    "username": "user",
+                    "local": "user",
                     "plus_address": "tag",
                     "mail_server": "domain",
                     "domain": "org",
                 },
             },
         )
+
+    def test_parse_no_domain(self):
+        """Email without domain is invalid"""
+        result = email.parse_email("easy@")
+        self.assertIsNone(result)
+
+    def test_parse_no_local(self):
+        """Email without local is invalid"""
+        result = email.parse_email("@example.com")
+        self.assertIsNone(result)
+
+    def test_no_trailing_or_leading_dot(self):
+        """Negative Control"""
+        result = email.parse_email("trailing-dot@example.com")
+        self.assertEqual(
+            result,
+            {
+                "trailing-dot@example.com": {
+                    "local": "trailing-dot",
+                    "plus_address": "",
+                    "mail_server": "example",
+                    "domain": "com",
+                }
+            },
+        )
+
+    def test_trailing_dot(self):
+        """Trailing dot and leading dot are invalid"""
+        result = email.parse_email("trailing-dot.@example")
+        self.assertIsNone(result)
+
+    def test_leading_dot(self):
+        """Trailing dot and leading dot are invalid"""
+        result = email.parse_email(".trailing-dot@example")
+        self.assertIsNone(result)
+
+    def test_trailing_space(self):
+        """Trailing and leading space are invalid"""
+        result = email.parse_email("trailing-dot @example")
+        self.assertIsNone(result)
+
+    def test_leading_space(self):
+        """Trailing and leading space are invalid"""
+        result = email.parse_email(" trailing-dot@example")
+        self.assertIsNone(result)
 
     def test_parse_email_invalid_no_at(self):
         """Test parsing of invalid email without @ symbol"""
@@ -110,13 +155,13 @@ class TestEmail(unittest.TestCase):
             result,
             {
                 "test1@example.com": {
-                    "username": "test1",
+                    "local": "test1",
                     "plus_address": "",
                     "mail_server": "example",
                     "domain": "com",
                 },
                 "test2@domain.org": {
-                    "username": "test2",
+                    "local": "test2",
                     "plus_address": "",
                     "mail_server": "domain",
                     "domain": "org",
@@ -148,7 +193,7 @@ class TestEmail(unittest.TestCase):
         result = email.to_json("test@example.com")
         self.assertIsInstance(result, str)
         self.assertIn("test@example.com", result)
-        self.assertIn("username", result)
+        self.assertIn("local", result)
         self.assertIn("mail_server", result)
         self.assertIn("domain", result)
 
@@ -178,7 +223,7 @@ class TestEmail(unittest.TestCase):
         result = email.to_csv("test@example.com")
         self.assertIsInstance(result, str)
         self.assertIn("test@example.com", result)
-        self.assertIn("username", result)
+        self.assertIn("local", result)
         self.assertIn("mail_server", result)
         self.assertIn("domain", result)
 
