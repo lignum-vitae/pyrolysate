@@ -6,54 +6,63 @@
 
 # Pyrolysate
 
-Pyrolysate is a Python library and CLI tool for parsing and validating URLs and email addresses.
-It breaks down URLs and emails into their component parts, validates against IANA's official TLD list,
+Pyrolysate is a Python library and CLI tool for parsing and validating URLs and
+email addresses.
+It breaks down URLs and emails into their component parts, validates against
+IANA's official TLD list,
 and outputs structured data in JSON, CSV, or text format.
 
 The library offers both a programmer-friendly API and a command-line interface,
 making it suitable for both development integration and quick data processing tasks.
-It handles single entries or large datasets efficiently using Python's generator functionality,
-and provides flexible input/output options including file processing with custom delimiters.
+It handles single entries or large datasets efficiently using Python's
+generator functionality,
+and provides flexible input/output options including file processing with
+custom delimiters.
 
 ## Features
 
 ### URL Parsing
-  - Extract scheme, subdomain, domain, TLD, port, path, query, and fragment components
-  - Support for complex URL patterns including ports, queries, and fragments
-  - Support for IP addresses in URLs
-  - Support for both direct input and file processing via CLI or API
-  - Output as JSON, CSV, or text format through CLI or API
+
+- Extract scheme, subdomain, domain, TLD, port, path, query, and fragment components
+- Support for complex URL patterns including ports, queries, and fragments
+- Support for IP addresses in URLs
+- Support for both direct input and file processing via CLI or API
+- Output as JSON, CSV, or text format through CLI or API
 
 ### Email Parsing
-  - Extract username, mail server, and domain components
-  - Support for plus addressing (e.g., user+tag@domain.com)
-  - Support for both direct input and file processing via CLI or API
-  - Output as JSON, CSV, or text format through CLI or API
+
+- Extract local, mail server, and domain components
+- Support for plus addressing (e.g., user+tag@domain.com)
+- Support for both direct input and file processing via CLI or API
+- Output as JSON, CSV, or text format through CLI or API
 
 ### Top Level Domain Validation
-  - Automatic updates from IANA's official TLD list
-  - Local TLD file caching for offline use
-  - Fallback to common TLDs if both online and local sources fail
+
+- Automatic updates from IANA's official TLD list
+- Local TLD file caching for offline use
+- Fallback to common TLDs if both online and local sources fail
 
 ### Flexible Input/Output
-  - Process single or multiple entries
-  - Support for government domain emails (.gov.tld)
-  - Custom delimiters for file input
-  - Multiple output formats with .txt format as default (JSON, CSV, text)
-  - Pretty-printed or minified JSON output
-  - Console output or file saving options
-  - Memory-efficient processing of large datasets using Python generators
-  - Support for compressed input files:
-    - ZIP archives (processes all text files within .zip)
-    - GZIP (.gz)
-    - BZIP2 (.bz2)
-    - LZMA (.xz, .lzma)
+
+- Process single or multiple entries
+- Support for government domain emails (.gov.tld)
+- Custom delimiters for file input
+- Multiple output formats with .txt format as default (JSON, CSV, text)
+- Pretty-printed or minified JSON output
+- Console output or file saving options
+- Memory-efficient processing of large datasets using Python generators
+- Support for compressed input files:
+  - ZIP archives (processes all text files within .zip)
+  - GZIP (.gz)
+  - BZIP2 (.bz2)
+  - LZMA (.xz, .lzma)
 
 ### Developer Friendly
-  - Type hints for better IDE support
-  - Comprehensive docstrings
-  - Modular design for easy integration
-  - Command-line interface for quick testing
+
+- Type hints for better IDE support
+- Comprehensive docstrings
+- Modular design for easy integration
+- Command-line interface for quick testing
 
 ## API Reference
 
@@ -102,6 +111,7 @@ and provides flexible input/output options including file processing with custom
 | `-d`, `--delimiter`    | `str`  | `'\n'`                        | Delimiter for input file parsing   |
 
 ### Input File Support
+
 | Format | Extension  | Description                    |
 |--------|------------|--------------------------------|
 | Text   | .txt       | Plain text files               |
@@ -119,16 +129,17 @@ and provides flexible input/output options including file processing with custom
 | Field        | Description                   | Example            |
 |--------------|-------------------------------|--------------------|
 | input        | Full email                    | user+tag@gmail.com |
-| username     | Part before + or @ symbol     | user               |
+| local        | Part before + or @ symbol     | user               |
 | plus_address | Optional part between + and @ | tag                |
 | mail_server  | Domain before TLD             | gmail              |
 | domain       | Top-level domain              | com                |
 
 Example output:
+
 ```json
-{"user+tag@gmail.com": 
+{"user+tag@gmail.com":
     {
-    "username": "user",
+    "local": "user",
     "plus_address": "tag",
     "mail_server": "gmail",
     "domain": "com"
@@ -137,7 +148,7 @@ Example output:
 ```
 
 ```csv
-email,username,plus_address,mail_server,domain
+email,local,plus_address,mail_server,domain
 user+tag@gmail.com,user,tag,gmail,com
 ```
 
@@ -155,8 +166,9 @@ user+tag@gmail.com,user,tag,gmail,com
 | fragment            | URL fragment     | section1  |
 
 Example output:
+
 ```json
-{"https://www.example.com:443/blog/post?q=test#section1": 
+{"https://www.example.com:443/blog/post?q=test#section1":
     {
     "scheme": "https",
     "subdomain": "www",
@@ -176,17 +188,24 @@ https://www.example.com:443/blog/post?q=test#section1,https,www,example,com,443,
 ```
 
 ## 🚀 Installation
+
 ### From PyPI
+
 ```bash
 pip install pyrolysate
 ```
+
 ### For Development
+
 1. **Clone the repository**
+
 ```bash
 git clone https://github.com/dawnandrew100/pyrolysate.git
 cd pyrolysate
 ```
+
 2. **Create and activate a virtual environment**
+
 ```bash
 # Using hatch (recommended)
 hatch env create
@@ -198,7 +217,9 @@ python -m venv .venv
 # Unix/MacOS
 source .venv/bin/activate
 ```
+
 3. **Install in development mode**
+
 ```bash
 # Using hatch
 hatch run dev
@@ -206,7 +227,9 @@ hatch run dev
 # Or using pip
 pip install -e .
 ```
+
 ### Verify Installation
+
 ```bash
 # Using hatch (recommended)
 hatch run pyro -u example.com
@@ -214,143 +237,203 @@ hatch run pyro -u example.com
 # Or using the CLI directly
 pyro -u example.com
 ```
+
 The CLI command `pyro` will be available after installation. If the command isn't found, ensure Python's Scripts directory is in your PATH.
 
 ## Usage
 
 ### Input File Parsing
+
 ```python
 from pyrolysate import file_to_list
 ```
+
 #### Parse file with default newline delimiter
+
 ```python
 urls = file_to_list("urls.txt")
 ```
+
 #### Parse file with custom delimiter
+
 ```python
 emails = file_to_list("emails.csv", delimiter=",")
 ```
+
 ### Supported Outputs
+
 - JSON (prettified or minified)
 - CSV
 - Text (default)
 - File output with custom naming
 - Console output
+
 ### Email Parsing
+
 ```python
 from pyrolysate import email
 ```
+
 #### Parse single email
+
 ```python
 result = email.parse_email("user@example.com")
 ```
+
 #### Parse plus addressed email
+
 ```python
 result = email.parse_email("user+tag@example.com")
 ```
+
 #### Parse multiple emails
+
 ```python
 emails = ["user1@example.com", "user2@agency.gov.uk"]
 result = email.parse_email_array(emails)
 ```
+
 #### Convert to JSON
+
 ```python
 json_output = email.to_json("user@example.com")
 json_output = email.to_json(["user1@example.com", "user2@example.com"])
 ```
+
 #### Save to JSON file
+
 ```python
 email.to_json_file("output", "user@example.com")
 email.to_json_file("output", ["user1@example.com", "user2@test.org"])
 ```
+
 #### Convert to CSV
+
 ```python
 csv_output = email.to_csv("user@example.com")
 csv_output = email.to_csv(["user1@example.com", "user2@test.org"])
 
 ```
+
 #### Save to CSV file
+
 ```python
 email.to_csv_file("output", "user@example.com")
 email.to_csv_file("output", ["user1@example.com", "user2@test.org"])
 ```
 
 ### URL Parsing
+
 ```python
 from pyrolysate import url
 ```
+
 #### Parse single URL
+
 ```python
 result = url.parse_url("https://www.example.com/path?q=test#fragment")
 ```
+
 #### Parse multiple URLs
+
 ```python
 urls = ["example.com", "https://www.test.org"]
 result = url.parse_url_array(urls)
 ```
+
 #### Convert to JSON
+
 ```python
 json_output = url.to_json("example.com")
 json_output = url.to_json(["example.com", "test.org"])
 ```
+
 #### Save to JSON file
+
 ```python
 url.to_json_file("output", "example.com")
 url.to_json_file("output", ["example.com", "test.org"])
 ```
+
 #### Convert to CSV
+
 ```python
 csv_output = url.to_csv("example.com")
 csv_output = url.to_csv(["example.com", "test.org"])
 
 ```
+
 #### Save to CSV file
+
 ```python
 url.to_csv_file("output", "example.com")
 url.to_csv_file("output", ["example.com", "test.org"])
 ```
+
 ### Command Line Interface
+
 #### CLI help
+
 ```bash
 pyro -h
 ```
+
 #### Parse single URL
+
 ```bash
 pyro -u example.com
 ```
+
 #### Parse multiple URLs
+
 ```bash
 pyro -u example1.com example2.com
 ```
+
 #### Parse URLs from file (one per line by default)
+
 ```bash
 pyro -u -i urls.txt
 ```
+
 #### Parse URLs from CSV file with comma delimiter
+
 ```bash
 pyro -u -i urls.csv -d ","
 ```
+
 #### Parse email with plus addressing
+
 ```bash
 pyro -e user+newsletter@example.com
 ```
+
 #### Parse multiple emails and save as JSON
+
 ```bash
 pyro -e user1@example.com user2@example.com -j -o output
 ```
+
 #### Parse URLs from file and save as CSV
+
 ```bash
 pyro -u -i urls.txt -c -o parsed_urls
 ```
+
 #### Parse emails from file with comma delimiter
+
 ```bash
 pyro -e -i emails.txt -d "," -o output
 ```
+
 #### Parse emails with non-prettified JSON output
+
 ```bash
 pyro -e user@example.com -j -np
 ```
+
 #### Parse different file types
+
 ```bash
 # Parse log file
 pyro -u -i server.log
@@ -368,11 +451,13 @@ pyro -u -i archive.zip
 ## Supported Formats
 
 ### Email Formats
+
 - Standard: `example@mail.com`
 - Plus Addresses: `example+tag@mail.com`
 - Government: `example@agency.gov.uk`
 
 ### URL Formats
+
 - Basic: `example.com`
 - With subdomain: `www.example.com`
 - With scheme: `https://example.org`
@@ -385,6 +470,7 @@ pyro -u -i archive.zip
 - Full complex URLs: `https://www.example.gov.uk:8080/path?q=test#section1`
 
 ### Input File Support
+
 - Plain text files (.txt)
 - Plain text log files (.log)
 - Comma-separated values (.csv)
@@ -394,13 +480,24 @@ pyro -u -i archive.zip
 - LZMA compressed files (.xz, .lzma)
 
 #### ZIP Archive Support
+
 - Processes all text files within the archive (.txt, .csv, .log)
 - Handles nested directories
 - Continues processing if some files are corrupted
 - UTF-8 encoding expected for text files
 
 ### Outputs
+
 - Text file (default)
 - JSON file (prettified or minified)
 - CSV file
 - Console output
+
+> [!IMPORTANT]
+> This library handles email address comments by removing them
+> from the final output
+
+> [!CAUTION]
+> This library does not specially handle emails containing double quotes
+> Double quotes are valid in the local part of an email, but many modern
+> email systems either block or mark emails with quotes as spam
