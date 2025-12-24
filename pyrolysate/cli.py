@@ -64,6 +64,9 @@ def main():
     )
 
     args = parser.parse_args()
+    if not args.update and not args.input_file and len(args.target) == 0:
+        parser.print_help()
+        return
 
     if args.update:
         print("Updating TLD list...")

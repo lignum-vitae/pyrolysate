@@ -1,9 +1,18 @@
 # Typing, type hints, and errors
 from typing import Generator
 
+# standard library
+import re
+
 # internal dependencies
 from pyrolysate.common import Shared
 from pyrolysate.converter_async import async_support
+
+
+def main():
+    print(get_parentheses_groups('john(This(is(Hell)double))hall(is this separate)@gmail.com'))
+    print(get_parentheses_groups('john.doe(this should be removed)@example.com'))
+    print(email.to_json('john.doe(this should be removed)@example.com'))
 
 
 class Email:
@@ -29,28 +38,53 @@ class Email:
             or len(e_mail_string) >= 998
         ):
             return None
-        email_dict = {e_mail_string: self.empty_dict.copy()}
-        temp = e_mail_string.split("@")
+
+        new_email_string = e_mail_string
+        temp = new_email_string.split("@")
+        comments = get_parentheses_groups(new_email_string)
+        if comments == None:
+            return None
+
+        if comments:
+            for comment in comments:
+                new_email_string = new_email_string.replace(comment, "")
+                temp[0] = temp[0].replace(comment, "")
+                temp[1] = temp[1].replace(comment, "")
+
         if len(temp) != 2 or any(
             [
-                part == "" or part.startswith((".", " ")) or part.endswith((".", " "))
+                part == ""
+                or part.startswith(".")
+                or part.endswith(".")
+                or " " in part.strip()
+                or re.search(r"\.{2,}", part)
                 for part in temp
             ]
         ):
-            return None  # returns none for invalid emails without @ or multiple @
+            # None returned for invalid emails
+            # trailing or leading periods
+            # spaces between words
+            # consecutive periods anywhere
+            # multiple @ symbols or lack of @ symbol
+            # parentheses present in domain or mail server
+            return None
 
-        plus_address = temp[0].split("+")
+
+        email_dict = {new_email_string: self.empty_dict.copy()}
+
+        local_temp = temp[0]
+        plus_address = local_temp.split("+")
         if len(plus_address) == 2:
-            email_dict[e_mail_string]["local"] = plus_address[0]
-            email_dict[e_mail_string]["plus_address"] = plus_address[1]
+            email_dict[new_email_string]["local"] = plus_address[0]
+            email_dict[new_email_string]["plus_address"] = plus_address[1]
         else:
-            email_dict[e_mail_string]["local"] = temp[0]
+            email_dict[new_email_string]["local"] = local_temp
         server_and_domain = temp[1].split(".")
         if len(server_and_domain) > 3:
             return None  # invalid email with too many periods
-        email_dict[e_mail_string]["mail_server"] = server_and_domain[0]
+        email_dict[new_email_string]["mail_server"] = server_and_domain[0]
         # handles emails ending in standard tld or government emails (.gov.bs)
-        email_dict[e_mail_string]["domain"] = ".".join(server_and_domain[1:])
+        email_dict[new_email_string]["domain"] = ".".join(server_and_domain[1:])
         return email_dict
 
     def parse_email_array(self, emails: list[str]) -> dict[str, dict[str, str]] | None:
@@ -151,5 +185,32 @@ class Email:
             urls,
         )
 
+def get_parentheses_groups(text: str) -> list[str] | None:
+    results = []
+    stack = 0
+    start_index = None
+
+    for i, char in enumerate(text):
+        if char == '(':
+            if stack == 0:
+                start_index = i
+            stack += 1
+        elif char == ')':
+            stack -= 1
+            if stack == 0:
+                content = text[start_index:i+1]
+                results.append(content)
+        # Return None if seen '(' != ')' ie. a string like ))()
+        if stack < 0:
+            return None
+    # Return None if there are unclosed parentheses
+    if stack != 0:
+        return None
+
+    return results
+
 
 email = Email()
+
+if __name__ == "__main__":
+    main()

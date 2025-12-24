@@ -102,6 +102,21 @@ class TestEmail(unittest.TestCase):
         result = email.parse_email("@example.com")
         self.assertIsNone(result)
 
+    def test_comment(self):
+        """Comments are removed"""
+        result = email.parse_email("john.doe(work)(urgent)@example.com")
+        self.assertEqual(
+            result,
+            {
+                "john.doe@example.com": {
+                    "local": "john.doe",
+                    "plus_address": "",
+                    "mail_server": "example",
+                    "domain": "com",
+                }
+            },
+        )
+
     def test_no_trailing_or_leading_dot(self):
         """Negative Control"""
         result = email.parse_email("trailing-dot@example.com")
@@ -117,6 +132,11 @@ class TestEmail(unittest.TestCase):
             },
         )
 
+    def test_double_dot(self):
+        """Two or more consecutive periods are invalid"""
+        result = email.parse_email("invalid..email@gmail.com")
+        self.assertIsNone(result)
+
     def test_trailing_dot(self):
         """Trailing dot and leading dot are invalid"""
         result = email.parse_email("trailing-dot.@example")
@@ -128,13 +148,38 @@ class TestEmail(unittest.TestCase):
         self.assertIsNone(result)
 
     def test_trailing_space(self):
-        """Trailing and leading space are invalid"""
-        result = email.parse_email("trailing-dot @example")
-        self.assertIsNone(result)
+        """Trailing and leading space are valid"""
+        result = email.parse_email("trailing-space @example.com")
+        self.assertEqual(
+            result,
+            {
+                "trailing-space @example.com": {
+                    "local": "trailing-space ",
+                    "plus_address": "",
+                    "mail_server": "example",
+                    "domain": "com",
+                }
+            },
+        )
 
     def test_leading_space(self):
-        """Trailing and leading space are invalid"""
-        result = email.parse_email(" trailing-dot@example")
+        """Trailing and leading space are valid"""
+        result = email.parse_email(" leading-space@example.com")
+        self.assertEqual(
+            result,
+            {
+                " leading-space@example.com": {
+                    "local": " leading-space",
+                    "plus_address": "",
+                    "mail_server": "example",
+                    "domain": "com",
+                }
+            },
+        )
+
+    def test_between_spaces(self):
+        """Spaces between words not allowed"""
+        result = email.parse_email("what about spaces@example.com")
         self.assertIsNone(result)
 
     def test_parse_email_invalid_no_at(self):
@@ -146,6 +191,46 @@ class TestEmail(unittest.TestCase):
         """Test parsing of invalid email with too many dots"""
         result = email.parse_email("user@too.many.dots.com")
         self.assertIsNone(result)
+
+    def test_comments(self):
+        """Test that comments are removed in final output"""
+        result = email.parse_email("john.doe(this should be removed)@example.com")
+        self.assertEqual(
+            result,
+            {
+                "john.doe@example.com": {
+                    "local": "john.doe",
+                    "plus_address": "",
+                    "mail_server": "example",
+                    "domain": "com",
+                }
+            },
+        )
+
+    def test_only_comment(self):
+        """Local that is only a comment is invalid"""
+        result = email.parse_email("(This should return None)@example.com")
+        self.assertIsNone(result)
+
+    def test_only_comment_mail_server(self):
+        """Local that is only a comment is invalid"""
+        result = email.parse_email("This_should_return_None@(example).com")
+        self.assertIsNone(result)
+
+    def test_comment_domain(self):
+        """Local that is only a comment is invalid"""
+        result = email.parse_email("This_should_return_something@example(comment).com")
+        self.assertEqual(
+            result,
+            {
+                "This_should_return_something@example.com": {
+                    "local": "This_should_return_something",
+                    "plus_address": "",
+                    "mail_server": "example",
+                    "domain": "com",
+                }
+            },
+        )
 
     def test_email_array_valid(self):
         """Test parsing array of valid emails"""
