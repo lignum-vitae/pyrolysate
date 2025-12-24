@@ -9,12 +9,6 @@ from pyrolysate.common import Shared
 from pyrolysate.converter_async import async_support
 
 
-def main():
-    print(get_parentheses_groups('john(This(is(Hell)double))hall(is this separate)@gmail.com'))
-    print(get_parentheses_groups('john.doe(this should be removed)@example.com'))
-    print(email.to_json('john.doe(this should be removed)@example.com'))
-
-
 class Email:
     def __init__(self):
         self.shared = Shared()
@@ -68,7 +62,6 @@ class Email:
             # multiple @ symbols or lack of @ symbol
             # parentheses present in domain or mail server
             return None
-
 
         email_dict = {new_email_string: self.empty_dict.copy()}
 
@@ -185,20 +178,21 @@ class Email:
             urls,
         )
 
+
 def get_parentheses_groups(text: str) -> list[str] | None:
     results = []
     stack = 0
     start_index = None
 
     for i, char in enumerate(text):
-        if char == '(':
+        if char == "(":
             if stack == 0:
                 start_index = i
             stack += 1
-        elif char == ')':
+        elif char == ")":
             stack -= 1
             if stack == 0:
-                content = text[start_index:i+1]
+                content = text[start_index : i + 1]
                 results.append(content)
         # Return None if seen '(' != ')' ie. a string like ))()
         if stack < 0:
@@ -211,6 +205,3 @@ def get_parentheses_groups(text: str) -> list[str] | None:
 
 
 email = Email()
-
-if __name__ == "__main__":
-    main()
