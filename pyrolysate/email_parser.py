@@ -183,7 +183,7 @@ def get_comments_check_dots(text: str) -> list[str] | None:
 
     for i, char in enumerate(text):
         if char == ".":
-            if prev_dot == True:
+            if prev_dot is True:
                 return None
             prev_dot = True
         else:
