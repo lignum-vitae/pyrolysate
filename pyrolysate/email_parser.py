@@ -1,9 +1,6 @@
 # Typing, type hints, and errors
 from typing import Generator
 
-# standard library
-import re
-
 # internal dependencies
 from pyrolysate.common import Shared
 from pyrolysate.converter_async import async_support
@@ -35,7 +32,7 @@ class Email:
 
         new_email_string = e_mail_string
         temp = new_email_string.split("@")
-        comments = get_parentheses_groups(new_email_string)
+        comments = get_comments_check_dots(new_email_string)
         if comments == None:
             return None
 
@@ -51,7 +48,6 @@ class Email:
                 or part.startswith(".")
                 or part.endswith(".")
                 or " " in part.strip()
-                or re.search(r"\.{2,}", part)
                 for part in temp
             ]
         ):
@@ -179,12 +175,20 @@ class Email:
         )
 
 
-def get_parentheses_groups(text: str) -> list[str] | None:
+def get_comments_check_dots(text: str) -> list[str] | None:
     results = []
     stack = 0
     start_index = None
+    prev_dot = False
 
     for i, char in enumerate(text):
+        if char == ".":
+            if prev_dot == True:
+                return None
+            prev_dot = True
+        else:
+            prev_dot = False
+
         if char == "(":
             if stack == 0:
                 start_index = i
