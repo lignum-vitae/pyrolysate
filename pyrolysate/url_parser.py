@@ -49,7 +49,7 @@ class Url:
         :param url_string: A string containing a url
         :type url_string: str
         :param tlds: custom or up-to-date list of all current top level domains
-        :type tlds: list[str]
+        :type tlds: list[str] | None
         :return: dictionary containing url parsed into sub-parts
         :rtype: dict[str, dict[str, str]] | None
         """

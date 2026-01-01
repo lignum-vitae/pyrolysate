@@ -4,15 +4,14 @@ from functools import cache
 # Standard library
 from datetime import datetime
 
-# HTTP requests (third-party)
-import requests
-
 # internal depedencies
 from pyrolysate.utils import load_tld_file
 
 
 @cache
 def get_tlds_from_iana() -> tuple[str, list[str]] | None:
+    # HTTP requests (third-party)
+    import requests
     try:
         response = requests.get(
             "https://data.iana.org/TLD/tlds-alpha-by-domain.txt", timeout=10

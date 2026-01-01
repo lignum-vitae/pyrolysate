@@ -491,7 +491,7 @@ class TestUrl(unittest.TestCase):
                 },
             )
 
-    def test_get_tld(self):
+    def test_get_local_tld(self):
         """Test fetching TLDs from IANA"""
         tld_file = load_tld_file()
         last_updated, tlds = get_tlds_from_local(tld_file)

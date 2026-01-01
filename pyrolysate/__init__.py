@@ -2,7 +2,7 @@
 from pyrolysate.email_parser import Email
 from pyrolysate.url_parser import Url
 
-# Class instance imports
+# Class instantiation imports
 from pyrolysate.email_parser import email
 from pyrolysate.url_parser import url
 

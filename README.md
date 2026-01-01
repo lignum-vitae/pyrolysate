@@ -498,6 +498,10 @@ pyro -u -i archive.zip
 > from the final output
 
 > [!CAUTION]
-> This library does not specially handle emails containing double quotes
+> This library does not specially handle emails containing double quotes.
 > Double quotes are valid in the local part of an email, but many modern
-> email systems either block or mark emails with quotes as spam
+> email systems either block or mark emails with quotes as spam.
+> Make sure that `requests` is installed before running `get_tlds_from_iana`.
+
+> [!WARNING]
+> This library is designed and tested to handle http and https urls.

@@ -80,7 +80,7 @@ class Email:
         """Parses each email in an array
         :param emails: list of emails
         :type emails: list[str]
-        :return: parsed list of emails in a dictionary
+        :return: parsed list of emails as a dictionary
         :rtype: dict[str, dict[str, str]] | None
         """
         results = self._parse_email_array(emails)

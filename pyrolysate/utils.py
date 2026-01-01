@@ -6,9 +6,11 @@ from pathlib import Path
 
 
 def get_project_root() -> Path:
+    """ Return root of project relative to utils.py script"""
     return Path(__file__).absolute().parent.parent
 
 
 def load_tld_file() -> Path:
+    """ Load pyrolysate's tld.txt file """
     root = get_project_root()
     return root / "pyrolysate" / "tld.txt"

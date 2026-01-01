@@ -25,7 +25,7 @@ class _ZIP:
         Args:
             zip_file: Open ZIP file object
             member_name: Name of the member file to read
-            delimiter: String delimiter for splitting content
+            delimiter: String of delimiter for splitting content
 
         Returns:
             List of non-empty strings from the file
