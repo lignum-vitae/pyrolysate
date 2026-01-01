@@ -12,6 +12,7 @@ from pyrolysate.utils import load_tld_file
 def get_tlds_from_iana() -> tuple[str, list[str]] | None:
     # HTTP requests (third-party)
     import requests
+
     try:
         response = requests.get(
             "https://data.iana.org/TLD/tlds-alpha-by-domain.txt", timeout=10
