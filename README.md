@@ -87,14 +87,14 @@ custom delimiters.
 | `to_json_file(file_name, urls, prettify=True)` | `file_name: str`, `urls: list[str]`, `prettify: bool` | Converts and saves JSON to file                           |
 | `to_csv(urls)`                                 | `urls: str\|list[str]`                                | Converts to CSV format                                    |
 | `to_csv_file(file_name, urls)`                 | `file_name: str`, `urls: list[str]`                   | Converts and saves CSV to file                            |
-| `get_tld(path_to_tlds_file='tld.txt')`         | `path_to_tlds_file: str = 'tld.txt'`                  | Fetches current TLD list from IANA                        |
-| `local_tld_file(file_name)`                    | `file_name: str`                                      | Fetches and stores `get_tld()` output as a local txt file |
 
 ### Miscellaneous
 
-| Method                                          | Parameters                               | Description                                     |
-|------------------                               |----------------------                    |-------------------------                        |
-| `file_to_list(input_file_name, delimiter='\n')` | `input_file_name: str`, `delimiter: str` | Parses input file into python list by delimiter |
+| Method                                          | Parameters                               | Description                                                                          |
+|------------------                               |----------------------                    |-------------------------                                                             |
+| `file_to_list(input_file_name, delimiter='\n')` | `input_file_name: str`, `delimiter: str` | Parses input file into python list by delimiter                                      |
+| `get_tlds_from_iana`                            |                                          | Fetches latest top level domains from IANA                                           |
+| `get_tlds_from_local`                           | `path_to_tlds_file: str`                 | Fetches tlds from local file. Defaults to project's local file if path not specified |
 
 ## CLI Reference
 

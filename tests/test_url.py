@@ -1,6 +1,7 @@
 import unittest
 from pyrolysate import url
-from pyrolysate.update_tlds import get_tld
+from pyrolysate.update_tlds import get_tlds_from_local
+from pyrolysate.utils import load_tld_file
 
 
 class TestUrl(unittest.TestCase):
@@ -492,7 +493,8 @@ class TestUrl(unittest.TestCase):
 
     def test_get_tld(self):
         """Test fetching TLDs from IANA"""
-        last_updated, tlds = get_tld()
+        tld_file = load_tld_file()
+        last_updated, tlds = get_tlds_from_local(tld_file)
         self.assertIsInstance(last_updated, str)
         self.assertIsInstance(tlds, list)
         self.assertGreater(len(tlds), 0)

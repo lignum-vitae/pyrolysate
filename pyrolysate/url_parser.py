@@ -3,8 +3,9 @@ from typing import Generator
 
 # internal dependencies
 from pyrolysate.common import Shared
-from pyrolysate.update_tlds import get_tld
+from pyrolysate.update_tlds import get_tlds_from_local
 from pyrolysate.converter_async import async_support
+from pyrolysate.utils import load_tld_file
 
 
 class Url:
@@ -60,7 +61,11 @@ class Url:
 
         url_dict = {url_string: self.empty_dict.copy()}
         if tlds is None:
-            _, tlds = get_tld()
+            TLD_FILE = load_tld_file()
+            res = get_tlds_from_local(TLD_FILE)
+            if res is None:
+                return None
+            _, tlds = res
         scheme = url_string.split("://")[0]
         if "://" in url_string and scheme not in self.schemes_and_ports.keys():
             return None
@@ -214,8 +219,14 @@ class Url:
         """
         if not urls or all(item == "" for item in urls) or not isinstance(urls, list):
             return None
+
         if tlds is None:
-            _, tlds = get_tld()
+            TLD_FILE = load_tld_file()
+            res = get_tlds_from_local(TLD_FILE)
+            if res is None:
+                return None
+            _, tlds = res
+
         for url in urls:
             yield self.parse_url(url, tlds)
 

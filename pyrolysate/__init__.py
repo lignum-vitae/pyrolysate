@@ -8,3 +8,5 @@ from pyrolysate.url_parser import url
 
 # Function imports
 from pyrolysate.common import file_to_list
+from pyrolysate.update_tlds import get_tlds_from_iana
+from pyrolysate.update_tlds import get_tlds_from_local

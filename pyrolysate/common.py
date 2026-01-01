@@ -15,10 +15,6 @@ import zlib
 from io import StringIO
 
 
-def main():
-    pass
-
-
 class _ZIP:
     @staticmethod
     def _read_zip_member(
@@ -271,7 +267,3 @@ class Shared:
                 for raw_input, parsed_fields in result.items():
                     csv_writer.writerow(data_fields(raw_input, parsed_fields))
         return "File successfully written", 0
-
-
-if __name__ == "__main__":
-    main()

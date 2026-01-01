@@ -33,7 +33,7 @@ class Email:
         new_email_string = e_mail_string
         temp = new_email_string.split("@")
         comments = get_comments_check_dots(new_email_string)
-        if comments == None:
+        if comments is None:
             return None
 
         if comments:
