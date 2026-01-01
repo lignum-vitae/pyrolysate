@@ -12,7 +12,7 @@ test = ["pip install -e .", "pytest"]
 
 [project]
 name = "pyrolysate"
-version = "0.14.3"
+version = "1.0.0"
 authors = [{ name = "Andrew Hennis", email = "andrew.mr.hennis@gmail.com" }]
 description = "Parser made to convert lists of emails and urls into JSON formatted, CSV formatted, or plain text strings or files"
 readme = "README.md"
