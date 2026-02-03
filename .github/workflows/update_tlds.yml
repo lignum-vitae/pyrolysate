@@ -35,10 +35,21 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add pyrolysate/tld.txt
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: monthly update of IANA TLD list" && git push)
 
-      - name: Bump version
-        run: |
-          pip install toml
-          python bump_version.py
+          # TLD data before query
+          git show HEAD:pyrolysate/tld.txt | tail -n +5 > old_data.tmp
+          # TLD data after query
+          tail -n +5 pyrolysate/tld.txt > new_data.tmp
+
+          if cmp -s old_data.tmp new_data.tmp; then
+            echo "No TLD changes. Skipping commit."
+          else
+            echo "Bumping pyproject version..."
+            pip install toml
+            python bump_version.py
+            echo "TLD change detected. Committing..."
+            git add pyrolysate/tld.txt pyproject.toml
+            git commit -m "chore: monthly update of IANA TLD list"
+            git push
+          fi
+
