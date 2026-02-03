@@ -37,3 +37,8 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add pyrolysate/tld.txt
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore: monthly update of IANA TLD list" && git push)
+
+      - name: Bump version
+        run: |
+          pip install toml
+          python bump_version.py
