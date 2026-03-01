@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyrolysate"
-version = "1.0.0"
+version = "1.0.1"
 description = "Parser made to convert lists of emails and urls into JSON formatted, CSV formatted, or plain text strings or files"
 readme = "README.md"
 requires-python = ">=3.10"
