@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      did_update: ${{ steps.check_changes.outputs.changed }}
 
     steps:
       - name: Checkout repository
@@ -32,6 +34,7 @@ jobs:
         run: python -m pyrolysate.cli --update -o ./pyrolysate/tld.txt
 
       - name: Commit and push changes
+        id: check_changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
@@ -43,13 +46,21 @@ jobs:
 
           if cmp -s old_data.tmp new_data.tmp; then
             echo "No TLD changes. Skipping commit."
+            echo "changed=false" >> $GITHUB_OUTPUT
           else
-            echo "Bumping pyproject version..."
+            echo "Changes detected. Bumping pyproject version..."
             pip install toml
             python bump_version.py
             echo "TLD change detected. Committing..."
             git add pyrolysate/tld.txt pyproject.toml
             git commit -m "chore: monthly update of IANA TLD list"
             git push
+
+            echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
+  trigger-publish:
+    needs: update-tld
+    if: needs.update-tld.outputs.did_update == 'true'
+    uses: ./.github/workflows/python-publish.yml 
+    secrets: inherit

@@ -11,21 +11,13 @@ name: Upload Python Package
 on:
   release:
     types: [published]
-  workflow_run:
-    workflows: ["Monthly TLD Update"]
-    types:
-      - completed
+  workflow_call:
 
 permissions:
   contents: read
 
 jobs:
   deploy:
-    if: >
-      github.event_name == 'release' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-      contains(github.event.workflow_run.head_commit.message, 'chore: monthly update'))
-
     runs-on: ubuntu-latest
 
     steps:
