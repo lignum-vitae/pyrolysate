@@ -49,8 +49,10 @@ jobs:
             echo "changed=false" >> $GITHUB_OUTPUT
           else
             echo "Changes detected. Bumping pyproject version..."
-            pip install toml
+            pip install toml build
             python bump_version.py
+            rm -rf dist/
+            python -m build
             echo "TLD change detected. Committing..."
             git add pyrolysate/tld.txt pyproject.toml
             git commit -m "chore: monthly update of IANA TLD list"
