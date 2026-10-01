@@ -1,6 +1,6 @@
-File Created: 13 August 2026 13:36
-# Version 2026081300
- Last Updated Thu Aug 13 07:07:01 2026 UTC
+File Created: 01 October 2026 11:23
+# Version 2026093003
+ Last Updated Thu Oct  1 07:07:01 2026 UTC
 
 aaa
 aarp
@@ -622,7 +622,6 @@ jp
 jpmorgan
 jprs
 juegos
-juniper
 kaufen
 kddi
 ke
